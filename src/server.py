@@ -79,6 +79,26 @@ from .tools.templates import (
     apply_template_to_group_tool_definition,
     handle_apply_template_to_group,
 )
+from .tools.notifications import (
+    list_notification_schedules_tool_definition,
+    handle_list_notification_schedules,
+    get_notification_schedule_details_tool_definition,
+    handle_get_notification_schedule_details,
+    list_notification_groups_tool_definition,
+    handle_list_notification_groups,
+    list_contacts_tool_definition,
+    handle_list_contacts,
+)
+from .tools.agent_resources import (
+    list_agent_resource_types_tool_definition,
+    handle_list_agent_resource_types,
+    get_agent_resource_type_details_tool_definition,
+    handle_get_agent_resource_type_details,
+    list_server_resources_tool_definition,
+    handle_list_server_resources,
+    get_resource_details_tool_definition,
+    handle_get_resource_details,
+)
 
 # Get settings
 _settings = get_settings()
@@ -142,6 +162,16 @@ class FortiMonitorMCPServer:
                 get_server_template_details_tool_definition(),
                 apply_template_to_server_tool_definition(),
                 apply_template_to_group_tool_definition(),
+                # Phase 2 Priority 4 tools - Notifications
+                list_notification_schedules_tool_definition(),
+                get_notification_schedule_details_tool_definition(),
+                list_notification_groups_tool_definition(),
+                list_contacts_tool_definition(),
+                # Phase 2 Priority 4 tools - Agent Resources
+                list_agent_resource_types_tool_definition(),
+                get_agent_resource_type_details_tool_definition(),
+                list_server_resources_tool_definition(),
+                get_resource_details_tool_definition(),
             ]
 
         @self.server.call_tool()
@@ -211,6 +241,24 @@ class FortiMonitorMCPServer:
                 return await handle_apply_template_to_server(arguments, self.client)
             elif name == "apply_template_to_group":
                 return await handle_apply_template_to_group(arguments, self.client)
+            # Phase 2 Priority 4 tools - Notifications
+            elif name == "list_notification_schedules":
+                return await handle_list_notification_schedules(arguments, self.client)
+            elif name == "get_notification_schedule_details":
+                return await handle_get_notification_schedule_details(arguments, self.client)
+            elif name == "list_notification_groups":
+                return await handle_list_notification_groups(arguments, self.client)
+            elif name == "list_contacts":
+                return await handle_list_contacts(arguments, self.client)
+            # Phase 2 Priority 4 tools - Agent Resources
+            elif name == "list_agent_resource_types":
+                return await handle_list_agent_resource_types(arguments, self.client)
+            elif name == "get_agent_resource_type_details":
+                return await handle_get_agent_resource_type_details(arguments, self.client)
+            elif name == "list_server_resources":
+                return await handle_list_server_resources(arguments, self.client)
+            elif name == "get_resource_details":
+                return await handle_get_resource_details(arguments, self.client)
             else:
                 raise ValueError(f"Unknown tool: {name}")
 
