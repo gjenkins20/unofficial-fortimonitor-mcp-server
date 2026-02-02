@@ -324,7 +324,7 @@ class FortiMonitorClient:
         }
 
         if server_id:
-            params["server_id"] = server_id
+            params["server"] = server_id  # API expects "server", not "server_id"
 
         response = self._request("GET", "/outage/active", params=params)
         return OutageListResponse(**response)

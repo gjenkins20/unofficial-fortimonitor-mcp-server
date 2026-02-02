@@ -147,3 +147,107 @@ async def handle_get_outages(
     except Exception as e:
         logger.exception("Unexpected error in get_outages")
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
+
+
+def check_server_health_tool_definition() -> Tool:
+    """Return tool definition for checking server health."""
+    return Tool(
+        name="check_server_health",
+        description=(
+            "Check if a specific server is currently experiencing issues. "
+            "This checks the server status and any active outages. "
+            "Use this as the primary way to determine if a server is down."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "server_id": {
+                    "type": "integer",
+                    "description": "The ID of the server to check",
+                }
+            },
+            "required": ["server_id"],
+        },
+    )
+
+
+async def handle_check_server_health(
+    arguments: dict, client: FortiMonitorClient
+) -> List[TextContent]:
+    """Check server health - combines status check + outage check."""
+    try:
+        server_id = arguments["server_id"]
+        logger.info(f"Checking health for server {server_id}")
+
+        # Get server details
+        try:
+            server_response = client.get_server_details(server_id)
+            server_status = server_response.status
+            server_name = server_response.name
+            server_fqdn = server_response.fqdn
+        except Exception as e:
+            return [
+                TextContent(
+                    type="text",
+                    text=f"Error getting server details: {str(e)}",
+                )
+            ]
+
+        # Get active outages for this server
+        try:
+            # Use the active endpoint and filter by server
+            active_response = client.get_active_outages(server_id=server_id, limit=500)
+            server_outages = active_response.outage_list
+        except Exception as e:
+            logger.error(f"Error getting outages: {e}")
+            server_outages = []
+
+        # Build response
+        output_lines = [
+            f"**Health Check: {server_name} ({server_id})**\n",
+            f"FQDN: {server_fqdn}",
+            f"Status: {server_status}",
+        ]
+
+        # Status assessment
+        if server_status != "active":
+            output_lines.append(
+                f"\n⚠️  **WARNING: Server status is '{server_status}' (not active)**"
+            )
+        else:
+            output_lines.append("\n✅ Server status is active")
+
+        # Outages assessment
+        if server_outages:
+            output_lines.append(f"\n🚨 **{len(server_outages)} ACTIVE OUTAGE(S) DETECTED**\n")
+            for outage in server_outages:
+                severity = getattr(outage, "severity", "unknown")
+                status = getattr(outage, "status", "unknown")
+                start = getattr(outage, "start_time", "Unknown")
+                message = getattr(outage, "message", None)
+
+                output_lines.append(f"  • Severity: {severity}")
+                output_lines.append(f"    Status: {status}")
+                output_lines.append(f"    Started: {start}")
+                if message:
+                    output_lines.append(f"    Message: {message}")
+        else:
+            output_lines.append("\n✅ No active outages detected")
+
+        # Overall verdict
+        output_lines.append("\n**Overall Assessment:**")
+        if server_status != "active" or server_outages:
+            output_lines.append("🚨 **SERVER IS EXPERIENCING ISSUES**")
+        else:
+            output_lines.append("✅ **SERVER APPEARS HEALTHY**")
+
+        return [TextContent(type="text", text="\n".join(output_lines))]
+
+    except Exception as e:
+        logger.exception("Error checking server health")
+        return [
+            TextContent(
+                type="text",
+                text=f"Error checking server health: {str(e)}",
+            )
+        ]

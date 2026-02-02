@@ -191,11 +191,15 @@ class AgentResource(BaseModel):
 
     url: str = Field(alias="url")
     name: str
-    resource_type: Optional[str] = None
+    # API returns "agent_resource_type", map it to resource_type
+    resource_type: Optional[str] = Field(default=None, alias="agent_resource_type")
     label: Optional[str] = None
     unit: Optional[str] = None
     current_value: Optional[float] = None
     last_check: Optional[datetime] = None
+    # Additional fields the API may return
+    status: Optional[str] = None
+    value: Optional[float] = None  # Alternative to current_value
 
     class Config:
         populate_by_name = True
