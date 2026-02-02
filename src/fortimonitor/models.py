@@ -127,6 +127,20 @@ class Outage(BaseModel):
     class Config:
         populate_by_name = True
 
+    @field_validator("acknowledged", mode="before")
+    @classmethod
+    def parse_acknowledged(cls, v):
+        """Parse acknowledged field - can be bool, dict, or None."""
+        if v is None:
+            return False
+        if isinstance(v, bool):
+            return v
+        if isinstance(v, dict):
+            # If it's a dict (user info), that means it's acknowledged
+            return True
+        # Try to convert to bool
+        return bool(v)
+
     @field_validator("start_time", "end_time", "acknowledged_at", mode="before")
     @classmethod
     def parse_datetime(cls, v):
@@ -278,3 +292,282 @@ class SchemaResourceList(BaseModel):
 
     apiVersion: str
     apis: List[SchemaResource]
+
+
+# ============================================================================
+# PHASE 2 - PRIORITY 1 MODELS
+# ============================================================================
+
+
+class OutageNote(BaseModel):
+    """Model for outage notes/comments."""
+
+    id: Optional[int] = None
+    outage: Optional[str] = None  # URL to parent outage
+    note: str
+    created: Optional[datetime] = None
+    created_by: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", mode="before")
+    @classmethod
+    def parse_rfc2822_datetime(cls, v):
+        """Parse RFC 2822 datetime format."""
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+
+class OutageUpdate(BaseModel):
+    """Model for outage update requests."""
+
+    acknowledged: Optional[bool] = None
+    status: Optional[str] = None
+    end: Optional[datetime] = None
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.isoformat() if v else None}
+
+
+class MaintenanceWindow(BaseModel):
+    """Model for maintenance windows."""
+
+    id: Optional[int] = None
+    url: Optional[str] = None
+    name: str
+    start_time: Optional[datetime] = Field(default=None, alias="start")
+    end_time: Optional[datetime] = Field(default=None, alias="end")
+    servers: List[str] = Field(default_factory=list)  # List of server URLs
+    suppress_notifications: bool = Field(default=True, alias="suppress_notification")
+    description: Optional[str] = None
+    recurrence: Optional[str] = None  # e.g., "daily", "weekly", "monthly"
+    created: Optional[datetime] = None
+    updated: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+        json_encoders = {datetime: lambda v: v.isoformat() if v else None}
+
+    @field_validator("start_time", "end_time", "created", "updated", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        """Parse datetime in various formats."""
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+    @property
+    def window_id(self) -> Optional[int]:
+        """Extract maintenance window ID from URL."""
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return self.id
+
+
+class MaintenanceWindowListResponse(BaseModel):
+    """Model for maintenance schedule list response.
+
+    Note: FortiMonitor API uses 'maintenance_schedule_list' in the response.
+    """
+
+    maintenance_schedule_list: List[MaintenanceWindow] = Field(
+        default_factory=list, alias="maintenance_schedule_list"
+    )
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def maintenance_window_list(self) -> List[MaintenanceWindow]:
+        """Alias for backward compatibility."""
+        return self.maintenance_schedule_list
+
+    @property
+    def limit(self) -> int:
+        """Get limit from meta."""
+        return self.meta.limit
+
+    @property
+    def offset(self) -> int:
+        """Get offset from meta."""
+        return self.meta.offset
+
+    @property
+    def total_count(self) -> Optional[int]:
+        """Get total count from meta."""
+        return self.meta.total_count
+
+
+# ============================================================================
+# PHASE 2 - PRIORITY 3 MODELS (Server Groups & Templates)
+# ============================================================================
+
+
+class ServerGroup(BaseModel):
+    """Model for server groups."""
+
+    url: Optional[str] = None
+    name: str
+    description: Optional[str] = None
+    servers: List[str] = Field(default_factory=list)  # Server URLs
+    created: Optional[datetime] = None
+    updated: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", "updated", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        """Parse datetime in various formats."""
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+    @property
+    def id(self) -> Optional[int]:
+        """Extract server group ID from URL."""
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+    @property
+    def server_count(self) -> int:
+        """Get the number of servers in the group."""
+        return len(self.servers)
+
+
+class ServerGroupListResponse(BaseModel):
+    """Model for server group list response."""
+
+    server_group_list: List[ServerGroup] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def limit(self) -> int:
+        """Get limit from meta."""
+        return self.meta.limit
+
+    @property
+    def offset(self) -> int:
+        """Get offset from meta."""
+        return self.meta.offset
+
+    @property
+    def total_count(self) -> Optional[int]:
+        """Get total count from meta."""
+        return self.meta.total_count
+
+
+class ServerTemplate(BaseModel):
+    """Model for server monitoring templates."""
+
+    url: Optional[str] = None
+    name: str
+    description: Optional[str] = None
+    agent_resource_types: List[str] = Field(default_factory=list)  # Resource type URLs
+    network_services: List[str] = Field(default_factory=list)  # Network service URLs
+    notification_group: Optional[str] = None  # Notification group URL
+    created: Optional[datetime] = None
+    updated: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", "updated", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        """Parse datetime in various formats."""
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+    @property
+    def id(self) -> Optional[int]:
+        """Extract template ID from URL."""
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class ServerTemplateListResponse(BaseModel):
+    """Model for server template list response."""
+
+    server_template_list: List[ServerTemplate] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def limit(self) -> int:
+        """Get limit from meta."""
+        return self.meta.limit
+
+    @property
+    def offset(self) -> int:
+        """Get offset from meta."""
+        return self.meta.offset
+
+    @property
+    def total_count(self) -> Optional[int]:
+        """Get total count from meta."""
+        return self.meta.total_count

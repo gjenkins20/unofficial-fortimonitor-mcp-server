@@ -3,7 +3,10 @@
     "allow": [
       "Bash(dir:*)",
       "Bash(python -m py_compile:*)",
-      "Bash(.\\\\venv\\\\Scripts\\\\python.exe:*)"
+      "Bash(.\\\\venv\\\\Scripts\\\\python.exe:*)",
+      "Bash(python test_priority1.py:*)",
+      "Bash(pip show:*)",
+      "Bash(python -c:*)"
     ]
   }
 }
