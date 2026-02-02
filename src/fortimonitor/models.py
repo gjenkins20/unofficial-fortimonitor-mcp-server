@@ -571,3 +571,274 @@ class ServerTemplateListResponse(BaseModel):
     def total_count(self) -> Optional[int]:
         """Get total count from meta."""
         return self.meta.total_count
+
+
+# ============================================================================
+# PHASE 2 - PRIORITY 4 MODELS (Notifications & Agent Resources)
+# ============================================================================
+
+
+class NotificationSchedule(BaseModel):
+    """Model for notification schedules."""
+
+    url: Optional[str] = None
+    name: str
+    timezone: Optional[str] = None
+    schedule_type: Optional[str] = None  # e.g., "weekly", "daily"
+    intervals: Optional[List[Dict[str, Any]]] = None
+    created: Optional[datetime] = None
+    updated: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", "updated", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        """Parse datetime in various formats."""
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+    @property
+    def id(self) -> Optional[int]:
+        """Extract schedule ID from URL."""
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class NotificationScheduleListResponse(BaseModel):
+    """Model for notification schedule list response."""
+
+    notification_schedule_list: List[NotificationSchedule] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def limit(self) -> int:
+        return self.meta.limit
+
+    @property
+    def offset(self) -> int:
+        return self.meta.offset
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+class NotificationGroup(BaseModel):
+    """Model for notification groups."""
+
+    url: Optional[str] = None
+    name: str
+    contacts: List[str] = Field(default_factory=list)  # Contact URLs
+    notification_schedule: Optional[str] = None  # Schedule URL
+    created: Optional[datetime] = None
+    updated: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", "updated", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+    @property
+    def id(self) -> Optional[int]:
+        """Extract group ID from URL."""
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+    @property
+    def contact_count(self) -> int:
+        return len(self.contacts)
+
+
+class NotificationGroupListResponse(BaseModel):
+    """Model for notification group list response."""
+
+    notification_group_list: List[NotificationGroup] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def limit(self) -> int:
+        return self.meta.limit
+
+    @property
+    def offset(self) -> int:
+        return self.meta.offset
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+class Contact(BaseModel):
+    """Model for notification contacts."""
+
+    url: Optional[str] = None
+    name: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    sms: Optional[str] = None
+    notification_methods: Optional[List[str]] = None
+    created: Optional[datetime] = None
+    updated: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", "updated", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+    @property
+    def id(self) -> Optional[int]:
+        """Extract contact ID from URL."""
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class ContactListResponse(BaseModel):
+    """Model for contact list response."""
+
+    contact_list: List[Contact] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def limit(self) -> int:
+        return self.meta.limit
+
+    @property
+    def offset(self) -> int:
+        return self.meta.offset
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+class AgentResourceType(BaseModel):
+    """Model for agent resource types (metric types)."""
+
+    url: Optional[str] = None
+    # API uses 'label' for the name field
+    name: Optional[str] = Field(default=None, alias="label")
+    category: Optional[str] = None
+    unit: Optional[str] = None
+    description: Optional[str] = None
+    monitoring_type: Optional[str] = None
+    created: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+    @property
+    def id(self) -> Optional[int]:
+        """Extract type ID from URL."""
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class AgentResourceTypeListResponse(BaseModel):
+    """Model for agent resource type list response."""
+
+    agent_resource_type_list: List[AgentResourceType] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def limit(self) -> int:
+        return self.meta.limit
+
+    @property
+    def offset(self) -> int:
+        return self.meta.offset
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count

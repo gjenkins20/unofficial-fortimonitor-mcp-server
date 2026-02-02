@@ -959,19 +959,34 @@ class FortiMonitorClient:
 
         endpoint = f"server_group/{group_id}"
 
-        data = {}
-        if name:
-            data["name"] = name
-        if description is not None:
-            data["description"] = description
+        # FIXED: Get current group to preserve required fields
+        current_group = self.get_server_group_details(group_id)
+
+        # Build update with ALL required fields
+        data = {
+            "name": name if name is not None else current_group.name,  # Required
+        }
+
+        # Handle servers
         if server_ids is not None:
             data["servers"] = [f"{self.base_url}/server/{sid}" for sid in server_ids]
+        else:
+            data["servers"] = current_group.servers if current_group.servers else []
 
-        if not data:
-            raise ValueError("At least one field must be provided for update")
+        # Handle description
+        if description is not None:
+            data["description"] = description
+        elif current_group.description:
+            data["description"] = current_group.description
 
         logger.info(f"Updating server group {group_id}")
         response = self._request("PUT", endpoint, json_data=data)
+
+        # Handle response format
+        if isinstance(response, dict) and "success" in response:
+            # Fetch updated group details
+            return self.get_server_group_details(group_id)
+
         return ServerGroup(**response)
 
     def add_servers_to_group(self, group_id: int, server_ids: List[int]) -> "ServerGroup":
@@ -989,22 +1004,44 @@ class FortiMonitorClient:
             NotFoundError: If group not found
             APIError: If update fails
         """
-        # Get current group
-        group = self.get_server_group_details(group_id)
-
-        # Extract existing server IDs from URLs
         import re
-        existing_ids = set()
-        for server_url in group.servers:
-            match = re.search(r'/server/(\d+)', server_url)
-            if match:
-                existing_ids.add(int(match.group(1)))
 
-        # Combine with new IDs
-        all_ids = list(existing_ids.union(set(server_ids)))
+        if not server_ids:
+            raise ValueError("server_ids cannot be empty")
 
-        # Update group
-        return self.update_server_group(group_id, server_ids=all_ids)
+        endpoint = f"server_group/{group_id}"
+
+        # Get current group details
+        current_group = self.get_server_group_details(group_id)
+
+        # Get current server URLs
+        current_servers = current_group.servers if current_group.servers else []
+
+        # Add new server URLs
+        new_server_urls = [f"{self.base_url}/server/{sid}" for sid in server_ids]
+
+        # Combine (avoid duplicates)
+        all_servers = list(set(current_servers + new_server_urls))
+
+        # FIXED: Include ALL required fields
+        data = {
+            "name": current_group.name,  # Required
+            "servers": all_servers,
+        }
+
+        # Add description if it exists
+        if current_group.description:
+            data["description"] = current_group.description
+
+        logger.info(f"Adding {len(server_ids)} servers to group {group_id}")
+        response = self._request("PUT", endpoint, json_data=data)
+
+        # Handle response format
+        if isinstance(response, dict) and "success" in response:
+            return self.get_server_group_details(group_id)
+
+        from .models import ServerGroup
+        return ServerGroup(**response)
 
     def remove_servers_from_group(
         self, group_id: int, server_ids: List[int]
@@ -1023,22 +1060,42 @@ class FortiMonitorClient:
             NotFoundError: If group not found
             APIError: If update fails
         """
-        # Get current group
-        group = self.get_server_group_details(group_id)
+        if not server_ids:
+            raise ValueError("server_ids cannot be empty")
 
-        # Extract existing server IDs from URLs
-        import re
-        existing_ids = set()
-        for server_url in group.servers:
-            match = re.search(r'/server/(\d+)', server_url)
-            if match:
-                existing_ids.add(int(match.group(1)))
+        endpoint = f"server_group/{group_id}"
 
-        # Remove specified IDs
-        remaining_ids = list(existing_ids - set(server_ids))
+        # Get current group details
+        current_group = self.get_server_group_details(group_id)
 
-        # Update group
-        return self.update_server_group(group_id, server_ids=remaining_ids)
+        # Get current server URLs
+        current_servers = current_group.servers if current_group.servers else []
+
+        # Create URLs for servers to remove
+        remove_server_urls = {f"{self.base_url}/server/{sid}" for sid in server_ids}
+
+        # Remove specified servers
+        remaining_servers = [s for s in current_servers if s not in remove_server_urls]
+
+        # FIXED: Include ALL required fields
+        data = {
+            "name": current_group.name,  # Required
+            "servers": remaining_servers,
+        }
+
+        # Add description if it exists
+        if current_group.description:
+            data["description"] = current_group.description
+
+        logger.info(f"Removing {len(server_ids)} servers from group {group_id}")
+        response = self._request("PUT", endpoint, json_data=data)
+
+        # Handle response format
+        if isinstance(response, dict) and "success" in response:
+            return self.get_server_group_details(group_id)
+
+        from .models import ServerGroup
+        return ServerGroup(**response)
 
     def delete_server_group(self, group_id: int) -> bool:
         """
@@ -1136,6 +1193,228 @@ class FortiMonitorClient:
         logger.info(f"Applying template {template_id} to server {server_id}")
         response = self._request("PUT", endpoint, json_data=data)
         return response
+
+    # ============================================================================
+    # PHASE 2 - PRIORITY 4: NOTIFICATION METHODS
+    # ============================================================================
+
+    def list_notification_schedules(
+        self, limit: int = 50, offset: int = 0
+    ) -> "NotificationScheduleListResponse":
+        """
+        List all notification schedules.
+
+        Args:
+            limit: Maximum number of results
+            offset: Pagination offset
+
+        Returns:
+            NotificationScheduleListResponse object
+
+        Raises:
+            APIError: If retrieval fails
+        """
+        from .models import NotificationScheduleListResponse
+
+        endpoint = "notification_schedule"
+        params = {"limit": limit, "offset": offset}
+
+        logger.info(f"Listing notification schedules (limit={limit})")
+        response = self._request("GET", endpoint, params=params)
+        return NotificationScheduleListResponse(**response)
+
+    def get_notification_schedule_details(
+        self, schedule_id: int
+    ) -> "NotificationSchedule":
+        """
+        Get details for a specific notification schedule.
+
+        Args:
+            schedule_id: ID of the notification schedule
+
+        Returns:
+            NotificationSchedule object
+
+        Raises:
+            NotFoundError: If schedule not found
+            APIError: If retrieval fails
+        """
+        from .models import NotificationSchedule
+
+        endpoint = f"notification_schedule/{schedule_id}"
+
+        logger.info(f"Getting notification schedule {schedule_id}")
+        response = self._request("GET", endpoint)
+        return NotificationSchedule(**response)
+
+    def list_notification_groups(
+        self, limit: int = 50, offset: int = 0
+    ) -> "NotificationGroupListResponse":
+        """
+        List all notification groups.
+
+        Args:
+            limit: Maximum number of results
+            offset: Pagination offset
+
+        Returns:
+            NotificationGroupListResponse object
+
+        Raises:
+            APIError: If retrieval fails
+        """
+        from .models import NotificationGroupListResponse
+
+        endpoint = "notification_group"
+        params = {"limit": limit, "offset": offset}
+
+        logger.info(f"Listing notification groups (limit={limit})")
+        response = self._request("GET", endpoint, params=params)
+        return NotificationGroupListResponse(**response)
+
+    def get_notification_group_details(self, group_id: int) -> "NotificationGroup":
+        """
+        Get details for a specific notification group.
+
+        Args:
+            group_id: ID of the notification group
+
+        Returns:
+            NotificationGroup object
+
+        Raises:
+            NotFoundError: If group not found
+            APIError: If retrieval fails
+        """
+        from .models import NotificationGroup
+
+        endpoint = f"notification_group/{group_id}"
+
+        logger.info(f"Getting notification group {group_id}")
+        response = self._request("GET", endpoint)
+        return NotificationGroup(**response)
+
+    def list_contacts(self, limit: int = 100, offset: int = 0) -> "ContactListResponse":
+        """
+        List all notification contacts.
+
+        Args:
+            limit: Maximum number of results
+            offset: Pagination offset
+
+        Returns:
+            ContactListResponse object
+
+        Raises:
+            APIError: If retrieval fails
+        """
+        from .models import ContactListResponse
+
+        endpoint = "contact"
+        params = {"limit": limit, "offset": offset}
+
+        logger.info(f"Listing contacts (limit={limit})")
+        response = self._request("GET", endpoint, params=params)
+        return ContactListResponse(**response)
+
+    def get_contact_details(self, contact_id: int) -> "Contact":
+        """
+        Get details for a specific contact.
+
+        Args:
+            contact_id: ID of the contact
+
+        Returns:
+            Contact object
+
+        Raises:
+            NotFoundError: If contact not found
+            APIError: If retrieval fails
+        """
+        from .models import Contact
+
+        endpoint = f"contact/{contact_id}"
+
+        logger.info(f"Getting contact {contact_id}")
+        response = self._request("GET", endpoint)
+        return Contact(**response)
+
+    # ============================================================================
+    # PHASE 2 - PRIORITY 4: AGENT RESOURCE METHODS
+    # ============================================================================
+
+    def list_agent_resource_types(
+        self, limit: int = 100, offset: int = 0
+    ) -> "AgentResourceTypeListResponse":
+        """
+        List all available agent resource types (metric types).
+
+        Args:
+            limit: Maximum number of results
+            offset: Pagination offset
+
+        Returns:
+            AgentResourceTypeListResponse object
+
+        Raises:
+            APIError: If retrieval fails
+        """
+        from .models import AgentResourceTypeListResponse
+
+        endpoint = "agent_resource_type"
+        params = {"limit": limit, "offset": offset}
+
+        logger.info(f"Listing agent resource types (limit={limit})")
+        response = self._request("GET", endpoint, params=params)
+        return AgentResourceTypeListResponse(**response)
+
+    def get_agent_resource_type_details(self, type_id: int) -> "AgentResourceType":
+        """
+        Get details for a specific agent resource type.
+
+        Args:
+            type_id: ID of the agent resource type
+
+        Returns:
+            AgentResourceType object
+
+        Raises:
+            NotFoundError: If type not found
+            APIError: If retrieval fails
+        """
+        from .models import AgentResourceType
+
+        endpoint = f"agent_resource_type/{type_id}"
+
+        logger.info(f"Getting agent resource type {type_id}")
+        response = self._request("GET", endpoint)
+        return AgentResourceType(**response)
+
+    def list_server_agent_resources(
+        self, server_id: int, limit: int = 100, offset: int = 0
+    ) -> "AgentResourceListResponse":
+        """
+        List all agent resources (metrics) for a specific server.
+
+        Args:
+            server_id: ID of the server
+            limit: Maximum number of results
+            offset: Pagination offset
+
+        Returns:
+            AgentResourceListResponse object
+
+        Raises:
+            NotFoundError: If server not found
+            APIError: If retrieval fails
+        """
+        # Use existing AgentResourceListResponse from models
+        endpoint = f"server/{server_id}/agent_resource"
+        params = {"limit": limit, "offset": offset}
+
+        logger.info(f"Listing agent resources for server {server_id}")
+        response = self._request("GET", endpoint, params=params)
+        return AgentResourceListResponse(**response)
 
     def close(self):
         """Close the HTTP session."""
