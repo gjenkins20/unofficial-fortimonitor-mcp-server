@@ -20,6 +20,8 @@ from .tools.servers import (
 from .tools.outages import (
     get_outages_tool_definition,
     handle_get_outages,
+    check_server_health_tool_definition,
+    handle_check_server_health,
 )
 from .tools.metrics import (
     get_server_metrics_tool_definition,
@@ -61,6 +63,7 @@ class FortiMonitorMCPServer:
                 get_server_details_tool_definition(),
                 get_outages_tool_definition(),
                 get_server_metrics_tool_definition(),
+                check_server_health_tool_definition(),
             ]
 
         @self.server.call_tool()
@@ -81,6 +84,8 @@ class FortiMonitorMCPServer:
                 return await handle_get_outages(arguments, self.client)
             elif name == "get_server_metrics":
                 return await handle_get_server_metrics(arguments, self.client)
+            elif name == "check_server_health":
+                return await handle_check_server_health(arguments, self.client)
             else:
                 raise ValueError(f"Unknown tool: {name}")
 

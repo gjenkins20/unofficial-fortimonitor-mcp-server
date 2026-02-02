@@ -5,7 +5,7 @@ import logging
 
 from mcp.types import Tool, TextContent
 from ..fortimonitor.client import FortiMonitorClient
-from ..fortimonitor.exceptions import FortiMonitorError, APIError
+from ..fortimonitor.exceptions import FortiMonitorError, APIError, NotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -29,14 +29,10 @@ def get_server_metrics_tool_definition() -> Tool:
                     "type": "integer",
                     "default": 50,
                     "minimum": 1,
-                    "maximum": 500,
-                    "description": "Maximum number of resources to return",
+                    "maximum": 100,
+                    "description": "Maximum number of resources to return (max 100)",
                 },
-                "full": {
-                    "type": "boolean",
-                    "default": False,
-                    "description": "Resolve all URLs to actual objects",
-                },
+                # REMOVED: full parameter - causes 500 errors in FortiMonitor API
             },
             "required": ["server_id"],
         },
@@ -50,19 +46,19 @@ async def handle_get_server_metrics(
     try:
         server_id = arguments["server_id"]
         limit = arguments.get("limit", 50)
-        full = arguments.get("full", False)
 
-        # Reduce limit when full=true to avoid API overload
-        if full and limit > 50:
-            logger.warning(
-                f"Reducing limit from {limit} to 50 when full=true to prevent API errors"
-            )
-            limit = 50
+        # Cap limit at 100 to avoid issues
+        if limit > 100:
+            logger.warning(f"Reducing limit from {limit} to 100")
+            limit = 100
 
-        logger.info(f"Getting metrics for server {server_id} (limit={limit}, full={full})")
+        logger.info(f"Getting metrics for server {server_id} (limit={limit})")
 
+        # CRITICAL: Never use full=true - it causes HTTP 500 errors
         response = client.get_server_agent_resources(
-            server_id=server_id, limit=limit, full=full
+            server_id=server_id,
+            limit=limit,
+            full=False  # Must be False - API bug with full=true
         )
 
         if not response.agent_resource_list:
@@ -92,22 +88,34 @@ async def handle_get_server_metrics(
                 f"\n**{res_type.upper()} Resources ({len(type_resources)})**:"
             )
             for resource in type_resources:
+                # Try current_value first, then value field
+                val = resource.current_value if resource.current_value is not None else resource.value
                 current_val = (
-                    f"{resource.current_value} {resource.unit}"
-                    if resource.current_value is not None
+                    f"{val} {resource.unit or ''}"
+                    if val is not None
                     else "N/A"
                 )
+                status_info = f"  Status: {resource.status}\n" if resource.status else ""
                 resource_info = (
                     f"\n  ID: {resource.id}\n"
                     f"  Name: {resource.name}\n"
                     f"  Label: {resource.label or 'N/A'}\n"
                     f"  Current Value: {current_val}\n"
+                    f"{status_info}"
                     f"  Last Check: {resource.last_check or 'N/A'}\n"
                 )
                 result_parts.append(resource_info)
 
         return [TextContent(type="text", text="".join(result_parts))]
 
+    except NotFoundError:
+        logger.error(f"Server {server_id} not found")
+        return [
+            TextContent(
+                type="text",
+                text=f"Server {server_id} not found. Please verify the server ID.",
+            )
+        ]
     except APIError as e:
         # Provide context-aware error messages for API errors
         if e.status_code == 500:
@@ -116,16 +124,13 @@ async def handle_get_server_metrics(
                 TextContent(
                     type="text",
                     text=(
-                        f"⚠️ FortiMonitor API is experiencing issues retrieving metrics "
-                        f"for server {server_id}.\n\n"
-                        f"**Possible reasons:**\n"
-                        f"• Server doesn't have agent resources configured\n"
-                        f"• API is temporarily unavailable\n"
-                        f"• Too many metrics requested at once\n\n"
-                        f"**Alternative approaches:**\n"
-                        f"• Use `get_server_details` for server information\n"
-                        f"• Use `get_outages` to check if server is experiencing issues\n"
-                        f"• Try again with a lower limit (default is 50)"
+                        f"Unable to retrieve metrics for server {server_id}.\n\n"
+                        f"Error: {str(e)}\n\n"
+                        f"This may indicate:\n"
+                        f"- Server doesn't have monitoring agents installed\n"
+                        f"- Agent resources aren't configured\n"
+                        f"- FortiMonitor API is experiencing issues\n\n"
+                        f"Try: get_server_details to check server configuration"
                     ),
                 )
             ]
