@@ -84,8 +84,10 @@ from .tools.notifications import (
     handle_list_notification_schedules,
     get_notification_schedule_details_tool_definition,
     handle_get_notification_schedule_details,
-    list_notification_groups_tool_definition,
-    handle_list_notification_groups,
+    list_contact_groups_tool_definition,
+    handle_list_contact_groups,
+    get_contact_group_details_tool_definition,
+    handle_get_contact_group_details,
     list_contacts_tool_definition,
     handle_list_contacts,
 )
@@ -98,6 +100,22 @@ from .tools.agent_resources import (
     handle_list_server_resources,
     get_resource_details_tool_definition,
     handle_get_resource_details,
+)
+from .tools.reporting import (
+    get_system_health_summary_tool_definition,
+    handle_get_system_health_summary,
+    get_outage_statistics_tool_definition,
+    handle_get_outage_statistics,
+    get_server_statistics_tool_definition,
+    handle_get_server_statistics,
+    get_top_alerting_servers_tool_definition,
+    handle_get_top_alerting_servers,
+    export_servers_list_tool_definition,
+    handle_export_servers_list,
+    export_outage_history_tool_definition,
+    handle_export_outage_history,
+    generate_availability_report_tool_definition,
+    handle_generate_availability_report,
 )
 
 # Get settings
@@ -165,13 +183,22 @@ class FortiMonitorMCPServer:
                 # Phase 2 Priority 4 tools - Notifications
                 list_notification_schedules_tool_definition(),
                 get_notification_schedule_details_tool_definition(),
-                list_notification_groups_tool_definition(),
+                list_contact_groups_tool_definition(),
+                get_contact_group_details_tool_definition(),
                 list_contacts_tool_definition(),
                 # Phase 2 Priority 4 tools - Agent Resources
                 list_agent_resource_types_tool_definition(),
                 get_agent_resource_type_details_tool_definition(),
                 list_server_resources_tool_definition(),
                 get_resource_details_tool_definition(),
+                # Phase 2 Priority 5 tools - Reporting & Analytics
+                get_system_health_summary_tool_definition(),
+                get_outage_statistics_tool_definition(),
+                get_server_statistics_tool_definition(),
+                get_top_alerting_servers_tool_definition(),
+                export_servers_list_tool_definition(),
+                export_outage_history_tool_definition(),
+                generate_availability_report_tool_definition(),
             ]
 
         @self.server.call_tool()
@@ -246,8 +273,10 @@ class FortiMonitorMCPServer:
                 return await handle_list_notification_schedules(arguments, self.client)
             elif name == "get_notification_schedule_details":
                 return await handle_get_notification_schedule_details(arguments, self.client)
-            elif name == "list_notification_groups":
-                return await handle_list_notification_groups(arguments, self.client)
+            elif name == "list_contact_groups":
+                return await handle_list_contact_groups(arguments, self.client)
+            elif name == "get_contact_group_details":
+                return await handle_get_contact_group_details(arguments, self.client)
             elif name == "list_contacts":
                 return await handle_list_contacts(arguments, self.client)
             # Phase 2 Priority 4 tools - Agent Resources
@@ -259,6 +288,21 @@ class FortiMonitorMCPServer:
                 return await handle_list_server_resources(arguments, self.client)
             elif name == "get_resource_details":
                 return await handle_get_resource_details(arguments, self.client)
+            # Phase 2 Priority 5 tools - Reporting & Analytics
+            elif name == "get_system_health_summary":
+                return await handle_get_system_health_summary(arguments, self.client)
+            elif name == "get_outage_statistics":
+                return await handle_get_outage_statistics(arguments, self.client)
+            elif name == "get_server_statistics":
+                return await handle_get_server_statistics(arguments, self.client)
+            elif name == "get_top_alerting_servers":
+                return await handle_get_top_alerting_servers(arguments, self.client)
+            elif name == "export_servers_list":
+                return await handle_export_servers_list(arguments, self.client)
+            elif name == "export_outage_history":
+                return await handle_export_outage_history(arguments, self.client)
+            elif name == "generate_availability_report":
+                return await handle_generate_availability_report(arguments, self.client)
             else:
                 raise ValueError(f"Unknown tool: {name}")
 

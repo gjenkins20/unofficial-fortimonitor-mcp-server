@@ -3,7 +3,7 @@ Test script for Phase 2 Priority 4 - Notifications & Agent Resources.
 
 Tests:
 1. Notification Schedules - List and get details
-2. Notification Groups - List groups
+2. Contact Groups - List groups and get details
 3. Contacts - List notification contacts
 4. Agent Resource Types - List and get details
 5. Server Agent Resources - List resources for a server
@@ -19,7 +19,8 @@ from src.fortimonitor.client import FortiMonitorClient
 from src.tools.notifications import (
     handle_list_notification_schedules,
     handle_get_notification_schedule_details,
-    handle_list_notification_groups,
+    handle_list_contact_groups,
+    handle_get_contact_group_details,
     handle_list_contacts,
 )
 from src.tools.agent_resources import (
@@ -58,12 +59,24 @@ async def test_notification_schedules(client: FortiMonitorClient):
             print(detail_result[0].text)
 
 
-async def test_notification_groups(client: FortiMonitorClient):
-    """Test notification group tools."""
-    print_separator("TEST: List Notification Groups")
+async def test_contact_groups(client: FortiMonitorClient):
+    """Test contact group tools."""
+    print_separator("TEST: List Contact Groups")
 
-    result = await handle_list_notification_groups({"limit": 10}, client)
+    result = await handle_list_contact_groups({"limit": 10}, client)
     print(result[0].text)
+
+    # Try to get details of first group if any exist and no error
+    if "ID:" in result[0].text and "Error" not in result[0].text:
+        import re
+        match = re.search(r'\(ID: (\d+)\)', result[0].text)
+        if match:
+            group_id = int(match.group(1))
+            print_separator(f"TEST: Get Contact Group Details (ID: {group_id})")
+            detail_result = await handle_get_contact_group_details(
+                {"group_id": group_id}, client
+            )
+            print(detail_result[0].text)
 
 
 async def test_contacts(client: FortiMonitorClient):
@@ -127,7 +140,7 @@ async def main():
     try:
         # Test notification tools
         await test_notification_schedules(client)
-        await test_notification_groups(client)
+        await test_contact_groups(client)
         await test_contacts(client)
 
         # Test agent resource tools
