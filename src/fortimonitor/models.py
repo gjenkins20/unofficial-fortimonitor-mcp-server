@@ -644,8 +644,8 @@ class NotificationScheduleListResponse(BaseModel):
         return self.meta.total_count
 
 
-class NotificationGroup(BaseModel):
-    """Model for notification groups."""
+class ContactGroup(BaseModel):
+    """Model for contact groups."""
 
     url: Optional[str] = None
     name: str
@@ -690,10 +690,10 @@ class NotificationGroup(BaseModel):
         return len(self.contacts)
 
 
-class NotificationGroupListResponse(BaseModel):
-    """Model for notification group list response."""
+class ContactGroupListResponse(BaseModel):
+    """Model for contact group list response."""
 
-    notification_group_list: List[NotificationGroup] = Field(default_factory=list)
+    contact_group_list: List[ContactGroup] = Field(default_factory=list)
     meta: PaginationMeta
 
     class Config:

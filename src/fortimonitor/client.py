@@ -1247,52 +1247,52 @@ class FortiMonitorClient:
         response = self._request("GET", endpoint)
         return NotificationSchedule(**response)
 
-    def list_notification_groups(
+    def list_contact_groups(
         self, limit: int = 50, offset: int = 0
-    ) -> "NotificationGroupListResponse":
+    ) -> "ContactGroupListResponse":
         """
-        List all notification groups.
+        List all contact groups.
 
         Args:
             limit: Maximum number of results
             offset: Pagination offset
 
         Returns:
-            NotificationGroupListResponse object
+            ContactGroupListResponse object
 
         Raises:
             APIError: If retrieval fails
         """
-        from .models import NotificationGroupListResponse
+        from .models import ContactGroupListResponse
 
-        endpoint = "notification_group"
+        endpoint = "contact_group"
         params = {"limit": limit, "offset": offset}
 
-        logger.info(f"Listing notification groups (limit={limit})")
+        logger.info(f"Listing contact groups (endpoint={endpoint}, limit={limit})")
         response = self._request("GET", endpoint, params=params)
-        return NotificationGroupListResponse(**response)
+        return ContactGroupListResponse(**response)
 
-    def get_notification_group_details(self, group_id: int) -> "NotificationGroup":
+    def get_contact_group_details(self, group_id: int) -> "ContactGroup":
         """
-        Get details for a specific notification group.
+        Get details for a specific contact group.
 
         Args:
-            group_id: ID of the notification group
+            group_id: ID of the contact group
 
         Returns:
-            NotificationGroup object
+            ContactGroup object
 
         Raises:
             NotFoundError: If group not found
             APIError: If retrieval fails
         """
-        from .models import NotificationGroup
+        from .models import ContactGroup
 
-        endpoint = f"notification_group/{group_id}"
+        endpoint = f"contact_group/{group_id}"
 
-        logger.info(f"Getting notification group {group_id}")
+        logger.info(f"Getting contact group {group_id} (endpoint={endpoint})")
         response = self._request("GET", endpoint)
-        return NotificationGroup(**response)
+        return ContactGroup(**response)
 
     def list_contacts(self, limit: int = 100, offset: int = 0) -> "ContactListResponse":
         """

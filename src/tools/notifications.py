@@ -58,13 +58,13 @@ def get_notification_schedule_details_tool_definition() -> Tool:
     )
 
 
-def list_notification_groups_tool_definition() -> Tool:
-    """Return tool definition for listing notification groups."""
+def list_contact_groups_tool_definition() -> Tool:
+    """Return tool definition for listing contact groups."""
     return Tool(
-        name="list_notification_groups",
+        name="list_contact_groups",
         description=(
-            "List all notification groups. Notification groups define which contacts "
-            "receive alerts and which schedule they follow."
+            "List all contact groups. Contact groups define which contacts "
+            "receive alerts together."
         ),
         inputSchema={
             "type": "object",
@@ -75,6 +75,27 @@ def list_notification_groups_tool_definition() -> Tool:
                     "description": "Maximum number of groups to return (default 50)"
                 }
             }
+        }
+    )
+
+
+def get_contact_group_details_tool_definition() -> Tool:
+    """Return tool definition for getting contact group details."""
+    return Tool(
+        name="get_contact_group_details",
+        description=(
+            "Get detailed information about a specific contact group, "
+            "including all contacts in the group."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "group_id": {
+                    "type": "integer",
+                    "description": "The ID of the contact group"
+                }
+            },
+            "required": ["group_id"]
         }
     )
 
@@ -204,27 +225,27 @@ async def handle_get_notification_schedule_details(
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
 
-async def handle_list_notification_groups(
+async def handle_list_contact_groups(
     arguments: dict,
     client: FortiMonitorClient
 ) -> List[TextContent]:
-    """Handle list_notification_groups tool execution."""
+    """Handle list_contact_groups tool execution."""
     try:
         limit = arguments.get("limit", 50)
 
-        logger.info(f"Listing notification groups (limit={limit})")
+        logger.info(f"Listing contact groups (limit={limit})")
 
-        response = client.list_notification_groups(limit=limit)
-        groups = response.notification_group_list
+        response = client.list_contact_groups(limit=limit)
+        groups = response.contact_group_list
 
         if not groups:
             return [TextContent(
                 type="text",
-                text="No notification groups found."
+                text="No contact groups found."
             )]
 
         output_lines = [
-            f"**Notification Groups**\n",
+            f"**Contact Groups**\n",
             f"Found {len(groups)} group(s):\n"
         ]
 
@@ -240,16 +261,77 @@ async def handle_list_notification_groups(
         return [TextContent(type="text", text="\n".join(output_lines))]
 
     except NotFoundError:
-        # This endpoint may not be available in all FortiMonitor API versions
         return [TextContent(
             type="text",
-            text="Notification groups endpoint not available. "
-                 "This may be a limitation of your FortiMonitor API access level or version. "
-                 "You can still use list_contacts to see notification contacts."
+            text=(
+                "Error accessing FortiMonitor endpoint: /v2/contact_group\n\n"
+                "This endpoint may not be available in your FortiMonitor version. "
+                "You can still use list_contacts to see individual contacts."
+            )
         )]
     except APIError as e:
-        logger.error(f"API error listing notification groups: {e}")
-        return [TextContent(type="text", text=f"Error: {str(e)}")]
+        logger.error(f"API error accessing /v2/contact_group: {e}")
+        return [TextContent(
+            type="text",
+            text=(
+                f"Error accessing FortiMonitor endpoint: /v2/contact_group\n\n"
+                f"Error details: {str(e)}\n\n"
+                f"This endpoint may not be available in your FortiMonitor version. "
+                f"You can still use list_contacts to see individual contacts."
+            )
+        )]
+    except Exception as e:
+        logger.exception("Unexpected error")
+        return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
+
+
+async def handle_get_contact_group_details(
+    arguments: dict,
+    client: FortiMonitorClient
+) -> List[TextContent]:
+    """Handle get_contact_group_details tool execution."""
+    try:
+        group_id = arguments["group_id"]
+
+        logger.info(f"Getting contact group details {group_id}")
+
+        group = client.get_contact_group_details(group_id)
+
+        output_lines = [
+            f"**Contact Group: {group.name}** (ID: {group.id})\n"
+        ]
+
+        # Show contacts
+        output_lines.append(f"Total Contacts: {group.contact_count}")
+
+        if group.contacts:
+            output_lines.append("\n**Contact URLs:**")
+            for contact_url in group.contacts[:10]:
+                output_lines.append(f"  - {contact_url}")
+            if len(group.contacts) > 10:
+                output_lines.append(f"  ... and {len(group.contacts) - 10} more")
+
+        # Show notification schedule
+        if group.notification_schedule:
+            output_lines.append(f"\n**Notification Schedule:**")
+            output_lines.append(f"  {group.notification_schedule}")
+
+        if group.created:
+            output_lines.append(f"\nCreated: {group.created.strftime('%Y-%m-%d %H:%M')}")
+
+        return [TextContent(type="text", text="\n".join(output_lines))]
+
+    except NotFoundError:
+        return [TextContent(
+            type="text",
+            text=f"Error: Contact group {arguments.get('group_id')} not found."
+        )]
+    except APIError as e:
+        logger.error(f"API error getting contact group: {e}")
+        return [TextContent(
+            type="text",
+            text=f"Error accessing /v2/contact_group/{arguments.get('group_id')}: {str(e)}"
+        )]
     except Exception as e:
         logger.exception("Unexpected error")
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
