@@ -7,7 +7,19 @@
       "Bash(python test_priority1.py:*)",
       "Bash(pip show:*)",
       "Bash(python -c:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(tree:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(docker build:*)",
+      "Bash(where:*)",
+      "Bash(Start-Process \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\")",
+      "Bash(docker run --rm -e FORTIMONITOR_API_KEY=test-key fortimonitor-mcp:test python -c \"print\\(''Container OK''\\)\")",
+      "Bash(docker run --rm -e FORTIMONITOR_API_KEY=test-key fortimonitor-mcp:test python -c \"from src.server import FortiMonitorMCPServer; print\\(''Imports OK''\\)\")",
+      "Bash(docker run --rm -e FORTIMONITOR_API_KEY=test-key fortimonitor-mcp:test python -c \"from src.config import get_settings; print\\(''Config OK''\\)\")",
+      "Bash(docker run --rm -e FORTIMONITOR_API_KEY=test-key fortimonitor-mcp:test python -c \"from mcp.server import Server; print\\(''MCP OK''\\)\")",
+      "Bash(docker run:*)",
+      "Bash(docker images:*)"
     ]
   }
 }
