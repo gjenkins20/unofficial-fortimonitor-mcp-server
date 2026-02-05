@@ -1,0 +1,110 @@
+# =============================================================================
+# FortiMonitor MCP Server - Docker Build Exclusions
+# =============================================================================
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env.local
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+*.sublime-project
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+tests/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Environment files (provided at runtime)
+.env
+.env.*
+!.env.example
+
+# Cache directories (created at runtime)
+cache/
+
+# Test scripts at root level
+test_*.py
+check_*.py
+debug_*.py
+verify_*.py
+
+# Development scripts
+scripts/
+
+# Docker files (no need to include in image)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# Misc
+*.bak
+*.tmp
+*.temp
+Makefile
+LICENSE
+CHANGELOG*
+CONTRIBUTING*

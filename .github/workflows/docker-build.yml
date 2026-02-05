@@ -1,0 +1,208 @@
+# =============================================================================
+# FortiMonitor MCP Server - Docker Build & Push Workflow
+# =============================================================================
+#
+# This workflow builds and pushes Docker images on:
+# - Push to main/master branch (builds and pushes 'latest')
+# - Push of version tags (v*.*.* - builds and pushes version tag)
+# - Pull requests (build only, no push)
+#
+# Required secrets:
+# - DOCKERHUB_USERNAME: Your Docker Hub username
+# - DOCKERHUB_TOKEN: Docker Hub access token
+#
+# =============================================================================
+
+name: Docker Build and Push
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches:
+      - main
+      - master
+
+env:
+  IMAGE_NAME: fortimonitor-mcp
+
+jobs:
+  # ==========================================================================
+  # Build and Test
+  # ==========================================================================
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image for testing
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          tags: ${{ env.IMAGE_NAME }}:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run container tests
+        run: |
+          echo "Testing: Container starts..."
+          docker run --rm \
+            -e FORTIMONITOR_API_KEY=test-key \
+            ${{ env.IMAGE_NAME }}:test \
+            python -c "print('Container OK')"
+
+          echo "Testing: Python imports..."
+          docker run --rm \
+            -e FORTIMONITOR_API_KEY=test-key \
+            ${{ env.IMAGE_NAME }}:test \
+            python -c "from src.server import FortiMonitorMCPServer; print('Imports OK')"
+
+          echo "Testing: Config module..."
+          docker run --rm \
+            -e FORTIMONITOR_API_KEY=test-key \
+            ${{ env.IMAGE_NAME }}:test \
+            python -c "from src.config import get_settings; print('Config OK')"
+
+          echo "Testing: MCP module..."
+          docker run --rm \
+            -e FORTIMONITOR_API_KEY=test-key \
+            ${{ env.IMAGE_NAME }}:test \
+            python -c "from mcp.server import Server; print('MCP OK')"
+
+          echo "Testing: Environment variables..."
+          docker run --rm \
+            -e FORTIMONITOR_API_KEY=my-test-key-123 \
+            ${{ env.IMAGE_NAME }}:test \
+            python -c "from src.config import get_settings; s = get_settings(); assert s.fortimonitor_api_key == 'my-test-key-123'"
+
+          echo "Testing: Tool definitions..."
+          docker run --rm \
+            -e FORTIMONITOR_API_KEY=test-key \
+            ${{ env.IMAGE_NAME }}:test \
+            python -c "from src.tools.servers import get_servers_tool_definition; t = get_servers_tool_definition(); assert t.name == 'get_servers'"
+
+          echo "All tests passed!"
+
+  # ==========================================================================
+  # Push to Docker Hub
+  # ==========================================================================
+  push:
+    name: Push to Docker Hub
+    runs-on: ubuntu-latest
+    needs: build
+    # Only push on main/master branch or version tags (not PRs)
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (for multi-arch builds)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # Set 'latest' tag for main/master branch
+            type=raw,value=latest,enable={{is_default_branch}}
+            # Set version tags from git tags (v1.0.0 -> 1.0.0)
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            # Set branch name as tag for non-main branches
+            type=ref,event=branch,enable=${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+
+      - name: Build and push (multi-arch)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Update Docker Hub description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          short-description: "FortiMonitor MCP Server for Claude Desktop integration"
+          readme-filepath: ./DOCKER_DEPLOYMENT.md
+
+  # ==========================================================================
+  # Push to GitHub Container Registry (optional)
+  # ==========================================================================
+  push-ghcr:
+    name: Push to GitHub Container Registry
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=ref,event=branch,enable=${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+
+      - name: Build and push (multi-arch)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

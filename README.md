@@ -9,10 +9,32 @@ Model Context Protocol (MCP) server for FortiMonitor/Panopta v2 API integration 
 - **Metrics Access**: Retrieve agent resource metrics for servers
 - **Schema Discovery**: Runtime API schema validation and caching
 - **Real-time Integration**: Direct API access during Claude conversations
+- **Docker Support**: Easy deployment via Docker containers
 
 ## Quick Start
 
-### 1. Install dependencies
+### Option A: Docker (Recommended)
+
+The easiest way to run the FortiMonitor MCP Server:
+
+```bash
+# Run with Docker
+docker run -d \
+  --name fortimonitor-mcp \
+  -e FORTIMONITOR_API_KEY=your-api-key-here \
+  fortimonitor-mcp:latest
+
+# Or use Docker Compose
+cp .env.example .env
+# Edit .env and set your API key
+docker-compose up -d
+```
+
+See [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md) for detailed Docker instructions.
+
+### Option B: Local Installation
+
+#### 1. Install dependencies
 
 ```bash
 python -m venv venv
@@ -101,9 +123,30 @@ Retrieve agent resource metrics for a server.
 
 **Example**: "Show metrics for server 12345"
 
-## Integration with Claude
+## Integration with Claude Desktop
 
 Add to Claude Desktop config (`claude_desktop_config.json`):
+
+### Option A: Using Docker (Recommended)
+
+First, ensure the container is running:
+```bash
+docker-compose up -d
+```
+
+Then add to your Claude Desktop config:
+```json
+{
+  "mcpServers": {
+    "fortimonitor": {
+      "command": "docker",
+      "args": ["exec", "-i", "fortimonitor-mcp", "python", "-m", "src.server"]
+    }
+  }
+}
+```
+
+### Option B: Using Local Python
 
 ```json
 {
@@ -167,23 +210,35 @@ flake8 src/ tests/
 ```
 fortimonitor-mcp-server/
 ├── README.md
+├── DOCKER_DEPLOYMENT.md       # Docker deployment guide
+├── Dockerfile                 # Container definition
+├── docker-compose.yml         # Docker Compose config
 ├── requirements.txt
 ├── setup.py
 ├── pyproject.toml
 ├── .env.example
 ├── .gitignore
+├── .dockerignore
 ├── test_connectivity.py
+├── scripts/                   # Build and deployment scripts
+│   ├── build.sh / build.bat
+│   ├── test-container.sh / test-container.bat
+│   ├── push.sh
+│   └── release.sh
+├── .github/
+│   └── workflows/
+│       └── docker-build.yml   # CI/CD pipeline
 ├── src/
 │   ├── __init__.py
 │   ├── __main__.py
 │   ├── server.py              # Main MCP server
 │   ├── config.py              # Configuration management
-│   └── fortimonitor/
-│       ├── __init__.py
-│       ├── client.py          # FortiMonitor API client
-│       ├── schema.py          # Schema discovery & validation
-│       ├── models.py          # Data models
-│       └── exceptions.py      # Custom exceptions
+│   ├── fortimonitor/
+│   │   ├── __init__.py
+│   │   ├── client.py          # FortiMonitor API client
+│   │   ├── schema.py          # Schema discovery & validation
+│   │   ├── models.py          # Data models
+│   │   └── exceptions.py      # Custom exceptions
 │   └── tools/
 │       ├── __init__.py
 │       ├── servers.py         # Server-related tools
