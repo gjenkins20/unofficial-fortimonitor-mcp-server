@@ -24,35 +24,35 @@ def get_outages_tool_definition() -> Tool:
             "properties": {
                 "server_id": {
                     "type": "integer",
-                    "description": "Filter by specific server ID",
+                    "description":"Filter by specific server ID",
                 },
                 "severity": {
                     "type": "string",
-                    "description": "Filter by outage severity",
+                    "description":"Filter by outage severity",
                 },
                 "status": {
                     "type": "string",
                     "enum": ["active", "resolved"],
-                    "description": "Filter by outage status",
+                    "description":"Filter by outage status",
                 },
                 "hours_back": {
                     "type": "integer",
                     "default": 24,
                     "minimum": 1,
                     "maximum": 168,
-                    "description": "How many hours back to search (default: 24)",
+                    "description":"How many hours back to search (default: 24)",
                 },
                 "limit": {
                     "type": "integer",
                     "default": 50,
                     "minimum": 1,
                     "maximum": 500,
-                    "description": "Maximum number of outages to return",
+                    "description":"Maximum number of outages to return",
                 },
                 "active_only": {
                     "type": "boolean",
                     "default": False,
-                    "description": "Only return active outages",
+                    "description":"Only return active outages",
                 },
             },
         },
@@ -163,7 +163,7 @@ def check_server_health_tool_definition() -> Tool:
             "properties": {
                 "server_id": {
                     "type": "integer",
-                    "description": "The ID of the server to check",
+                    "description":"The ID of the server to check",
                 }
             },
             "required": ["server_id"],

@@ -200,11 +200,11 @@ def bulk_acknowledge_outages_tool_definition() -> Tool:
                 "outage_ids": {
                     "type": "array",
                     "items": {"type": "integer"},
-                    "description": "List of outage IDs to acknowledge"
+                    "description":"List of outage IDs to acknowledge"
                 },
                 "note": {
                     "type": "string",
-                    "description": "Optional note to add to all acknowledged outages"
+                    "description":"Optional note to add to all acknowledged outages"
                 }
             },
             "required": ["outage_ids"]
@@ -227,12 +227,12 @@ def bulk_add_tags_tool_definition() -> Tool:
                 "server_ids": {
                     "type": "array",
                     "items": {"type": "integer"},
-                    "description": "List of server IDs to tag"
+                    "description":"List of server IDs to tag"
                 },
                 "tags": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "List of tags to add to each server"
+                    "description":"List of tags to add to each server"
                 }
             },
             "required": ["server_ids", "tags"]
@@ -254,12 +254,12 @@ def bulk_remove_tags_tool_definition() -> Tool:
                 "server_ids": {
                     "type": "array",
                     "items": {"type": "integer"},
-                    "description": "List of server IDs"
+                    "description":"List of server IDs"
                 },
                 "tags": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "List of tags to remove from each server"
+                    "description":"List of tags to remove from each server"
                 }
             },
             "required": ["server_ids", "tags"]
@@ -281,26 +281,26 @@ def search_servers_advanced_tool_definition() -> Tool:
             "properties": {
                 "name_contains": {
                     "type": "string",
-                    "description": "Filter by servers whose name contains this string (case-insensitive)"
+                    "description":"Filter by servers whose name contains this string (case-insensitive)"
                 },
                 "status": {
                     "type": "string",
                     "enum": ["active", "inactive", "paused"],
-                    "description": "Filter by monitoring status"
+                    "description":"Filter by monitoring status"
                 },
                 "tags": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "Filter by tags (servers must have ALL specified tags)"
+                    "description":"Filter by tags (servers must have ALL specified tags)"
                 },
                 "has_active_outages": {
                     "type": "boolean",
-                    "description": "If true, only return servers with active outages"
+                    "description":"If true, only return servers with active outages"
                 },
                 "limit": {
                     "type": "integer",
                     "default": 50,
-                    "description": "Maximum number of results (default 50)"
+                    "description":"Maximum number of results (default 50)"
                 }
             }
         }
@@ -322,12 +322,12 @@ def get_servers_with_active_outages_tool_definition() -> Tool:
                 "severity": {
                     "type": "string",
                     "enum": ["critical", "warning", "info"],
-                    "description": "Optional filter by outage severity"
+                    "description":"Optional filter by outage severity"
                 },
                 "limit": {
                     "type": "integer",
                     "default": 50,
-                    "description": "Maximum number of servers to return (default 50)"
+                    "description":"Maximum number of servers to return (default 50)"
                 }
             }
         }

@@ -23,14 +23,14 @@ def get_server_metrics_tool_definition() -> Tool:
             "properties": {
                 "server_id": {
                     "type": "integer",
-                    "description": "ID of the server to retrieve metrics for",
+                    "description":"ID of the server to retrieve metrics for",
                 },
                 "limit": {
                     "type": "integer",
                     "default": 50,
                     "minimum": 1,
                     "maximum": 100,
-                    "description": "Maximum number of resources to return (max 100)",
+                    "description":"Maximum number of resources to return (max 100)",
                 },
                 # REMOVED: full parameter - causes 500 errors in FortiMonitor API
             },

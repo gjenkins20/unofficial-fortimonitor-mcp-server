@@ -778,6 +778,74 @@ class ContactListResponse(BaseModel):
         return self.meta.total_count
 
 
+class NetworkService(BaseModel):
+    """FortiMonitor network service model (sub-resource of a server)."""
+
+    url: Optional[str] = None
+    name: Optional[str] = None
+    service_type: Optional[str] = None  # URL to network_service_type
+    status: Optional[str] = None  # 'active' or 'suspended'
+    severity: Optional[str] = None  # 'critical' or 'warning'
+    frequency: Optional[int] = None  # Check frequency in seconds
+    port: Optional[int] = None
+    metadata: Optional[Dict[str, Any]] = None
+    tags: List[str] = Field(default_factory=list)
+    monitor_node: Optional[str] = None  # URL to monitoring_node
+    name_override: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def id(self) -> Optional[int]:
+        """Extract network service ID from URL."""
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+    @property
+    def display_name(self) -> str:
+        """Get display name, preferring name_override."""
+        return self.name_override or self.name or f"Service {self.id}"
+
+    @property
+    def service_type_id(self) -> Optional[int]:
+        """Extract service type ID from URL."""
+        if self.service_type:
+            parts = self.service_type.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class NetworkServiceListResponse(BaseModel):
+    """Response model for network service list endpoint."""
+
+    network_service_list: List[NetworkService] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def limit(self) -> int:
+        return self.meta.limit
+
+    @property
+    def offset(self) -> int:
+        return self.meta.offset
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
 class AgentResourceType(BaseModel):
     """Model for agent resource types (metric types)."""
 

@@ -25,11 +25,11 @@ def acknowledge_outage_tool_definition() -> Tool:
             "properties": {
                 "outage_id": {
                     "type": "integer",
-                    "description": "The ID of the outage to acknowledge",
+                    "description":"The ID of the outage to acknowledge",
                 },
                 "note": {
                     "type": "string",
-                    "description": "Optional note explaining the acknowledgment or planned response",
+                    "description":"Optional note explaining the acknowledgment or planned response",
                 },
             },
             "required": ["outage_id"],
@@ -112,11 +112,11 @@ def add_outage_note_tool_definition() -> Tool:
             "properties": {
                 "outage_id": {
                     "type": "integer",
-                    "description": "The ID of the outage",
+                    "description":"The ID of the outage",
                 },
                 "note": {
                     "type": "string",
-                    "description": "The note text to add (max 2000 characters recommended)",
+                    "description":"The note text to add (max 2000 characters recommended)",
                 },
             },
             "required": ["outage_id", "note"],
@@ -188,7 +188,7 @@ def get_outage_details_tool_definition() -> Tool:
             "properties": {
                 "outage_id": {
                     "type": "integer",
-                    "description": "The ID of the outage",
+                    "description":"The ID of the outage",
                 }
             },
             "required": ["outage_id"],

@@ -68,6 +68,10 @@ from .tools.server_groups import (
     handle_remove_servers_from_group,
     delete_server_group_tool_definition,
     handle_delete_server_group,
+    update_server_group_tool_definition,
+    handle_update_server_group,
+    get_server_network_services_tool_definition,
+    handle_get_server_network_services,
 )
 from .tools.templates import (
     list_server_templates_tool_definition,
@@ -175,6 +179,8 @@ class FortiMonitorMCPServer:
                 add_servers_to_group_tool_definition(),
                 remove_servers_from_group_tool_definition(),
                 delete_server_group_tool_definition(),
+                update_server_group_tool_definition(),
+                get_server_network_services_tool_definition(),
                 # Phase 2 Priority 3 tools - Templates
                 list_server_templates_tool_definition(),
                 get_server_template_details_tool_definition(),
@@ -259,6 +265,10 @@ class FortiMonitorMCPServer:
                 return await handle_remove_servers_from_group(arguments, self.client)
             elif name == "delete_server_group":
                 return await handle_delete_server_group(arguments, self.client)
+            elif name == "update_server_group":
+                return await handle_update_server_group(arguments, self.client)
+            elif name == "get_server_network_services":
+                return await handle_get_server_network_services(arguments, self.client)
             # Phase 2 Priority 3 tools - Templates
             elif name == "list_server_templates":
                 return await handle_list_server_templates(arguments, self.client)

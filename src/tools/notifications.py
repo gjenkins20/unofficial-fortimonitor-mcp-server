@@ -30,7 +30,7 @@ def list_notification_schedules_tool_definition() -> Tool:
                 "limit": {
                     "type": "integer",
                     "default": 50,
-                    "description": "Maximum number of schedules to return (default 50)"
+                    "description":"Maximum number of schedules to return (default 50)"
                 }
             }
         }
@@ -50,7 +50,7 @@ def get_notification_schedule_details_tool_definition() -> Tool:
             "properties": {
                 "schedule_id": {
                     "type": "integer",
-                    "description": "The ID of the notification schedule"
+                    "description":"The ID of the notification schedule"
                 }
             },
             "required": ["schedule_id"]
@@ -72,7 +72,7 @@ def list_contact_groups_tool_definition() -> Tool:
                 "limit": {
                     "type": "integer",
                     "default": 50,
-                    "description": "Maximum number of groups to return (default 50)"
+                    "description":"Maximum number of groups to return (default 50)"
                 }
             }
         }
@@ -92,7 +92,7 @@ def get_contact_group_details_tool_definition() -> Tool:
             "properties": {
                 "group_id": {
                     "type": "integer",
-                    "description": "The ID of the contact group"
+                    "description":"The ID of the contact group"
                 }
             },
             "required": ["group_id"]
@@ -114,7 +114,7 @@ def list_contacts_tool_definition() -> Tool:
                 "limit": {
                     "type": "integer",
                     "default": 50,
-                    "description": "Maximum number of contacts to return (default 50)"
+                    "description":"Maximum number of contacts to return (default 50)"
                 }
             }
         }
