@@ -910,3 +910,588 @@ class AgentResourceTypeListResponse(BaseModel):
     @property
     def total_count(self) -> Optional[int]:
         return self.meta.total_count
+
+
+# ============================================================================
+# ENHANCED OUTAGE MODELS
+# ============================================================================
+
+
+class OutageLog(BaseModel):
+    """Model for outage log entries."""
+
+    url: Optional[str] = None
+    entry: Optional[str] = None
+    user: Optional[str] = None
+    public: Optional[bool] = False
+    created: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+    @property
+    def id(self) -> Optional[int]:
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class OutageLogListResponse(BaseModel):
+    """Response model for outage log list endpoint."""
+
+    outage_log_list: List[OutageLog] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+class OutageAction(BaseModel):
+    """Model for outage notification actions."""
+
+    url: Optional[str] = None
+    action_type: Optional[str] = Field(default=None, alias="type")
+    contact: Optional[str] = None
+    status: Optional[str] = None
+    created: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+
+# ============================================================================
+# ENHANCED SERVER MODELS
+# ============================================================================
+
+
+class ServerAttribute(BaseModel):
+    """Model for server custom attributes."""
+
+    url: Optional[str] = None
+    name: Optional[str] = None
+    value: Optional[str] = None
+    server_attribute_type: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def id(self) -> Optional[int]:
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class ServerAttributeListResponse(BaseModel):
+    """Response model for server attribute list endpoint."""
+
+    server_attribute_list: List[ServerAttribute] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+class ServerLog(BaseModel):
+    """Model for server log entries."""
+
+    url: Optional[str] = None
+    entry: Optional[str] = None
+    user: Optional[str] = None
+    created: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+
+class ServerLogListResponse(BaseModel):
+    """Response model for server log list endpoint."""
+
+    server_log_list: List[ServerLog] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+# ============================================================================
+# CLOUD INTEGRATION MODELS
+# ============================================================================
+
+
+class CloudProvider(BaseModel):
+    """Model for cloud providers (AWS, Azure, GCP, etc.)."""
+
+    url: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def id(self) -> Optional[int]:
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class CloudProviderListResponse(BaseModel):
+    """Response model for cloud provider list endpoint."""
+
+    cloud_provider_list: List[CloudProvider] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+class CloudCredential(BaseModel):
+    """Model for cloud credentials."""
+
+    url: Optional[str] = None
+    name: Optional[str] = None
+    cloud_provider: Optional[str] = None
+    status: Optional[str] = None
+    description: Optional[str] = None
+    created: Optional[datetime] = None
+    updated: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", "updated", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+    @property
+    def id(self) -> Optional[int]:
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class CloudCredentialListResponse(BaseModel):
+    """Response model for cloud credential list endpoint."""
+
+    cloud_credential_list: List[CloudCredential] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+class CloudDiscovery(BaseModel):
+    """Model for cloud discovery results."""
+
+    url: Optional[str] = None
+    status: Optional[str] = None
+    discovered_servers: Optional[int] = None
+    created: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+    @property
+    def id(self) -> Optional[int]:
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class CloudDiscoveryListResponse(BaseModel):
+    """Response model for cloud discovery list endpoint."""
+
+    cloud_discovery_list: List[CloudDiscovery] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+class CloudRegion(BaseModel):
+    """Model for cloud regions."""
+
+    url: Optional[str] = None
+    name: Optional[str] = None
+    cloud_provider: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def id(self) -> Optional[int]:
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class CloudRegionListResponse(BaseModel):
+    """Response model for cloud region list endpoint."""
+
+    cloud_region_list: List[CloudRegion] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+class CloudService(BaseModel):
+    """Model for cloud services."""
+
+    url: Optional[str] = None
+    name: Optional[str] = None
+    cloud_provider: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def id(self) -> Optional[int]:
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class CloudServiceListResponse(BaseModel):
+    """Response model for cloud service list endpoint."""
+
+    cloud_service_list: List[CloudService] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+# ============================================================================
+# DEM APPLICATION MODELS
+# ============================================================================
+
+
+class DEMApplication(BaseModel):
+    """Model for Digital Experience Monitoring applications."""
+
+    url: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+    created: Optional[datetime] = None
+    updated: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", "updated", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+    @property
+    def id(self) -> Optional[int]:
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class DEMApplicationListResponse(BaseModel):
+    """Response model for DEM application list endpoint."""
+
+    dem_application_list: List[DEMApplication] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+class DEMInstance(BaseModel):
+    """Model for DEM application instances."""
+
+    url: Optional[str] = None
+    template: Optional[str] = None
+    status: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def id(self) -> Optional[int]:
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class DEMInstanceListResponse(BaseModel):
+    """Response model for DEM instance list endpoint."""
+
+    instance_list: List[DEMInstance] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+# ============================================================================
+# COMPOUND SERVICE MODELS
+# ============================================================================
+
+
+class CompoundService(BaseModel):
+    """Model for compound services (service dependency monitoring)."""
+
+    url: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+    servers: List[str] = Field(default_factory=list)
+    created: Optional[datetime] = None
+    updated: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("created", "updated", mode="before")
+    @classmethod
+    def parse_datetime(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            try:
+                return parsedate_to_datetime(v)
+            except Exception:
+                try:
+                    return datetime.fromisoformat(v.replace("Z", "+00:00"))
+                except Exception:
+                    return None
+        return v
+
+    @property
+    def id(self) -> Optional[int]:
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class CompoundServiceListResponse(BaseModel):
+    """Response model for compound service list endpoint."""
+
+    compound_service_list: List[CompoundService] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count
+
+
+class AgentResourceThreshold(BaseModel):
+    """Model for agent resource thresholds on compound services."""
+
+    url: Optional[str] = None
+    agent_resource: Optional[str] = None
+    warning_threshold: Optional[float] = None
+    critical_threshold: Optional[float] = None
+    comparison: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def id(self) -> Optional[int]:
+        if self.url:
+            parts = self.url.rstrip("/").split("/")
+            try:
+                return int(parts[-1])
+            except (ValueError, IndexError):
+                return None
+        return None
+
+
+class AgentResourceThresholdListResponse(BaseModel):
+    """Response model for agent resource threshold list endpoint."""
+
+    agent_resource_threshold_list: List[AgentResourceThreshold] = Field(default_factory=list)
+    meta: PaginationMeta
+
+    class Config:
+        populate_by_name = True
+
+    @property
+    def total_count(self) -> Optional[int]:
+        return self.meta.total_count

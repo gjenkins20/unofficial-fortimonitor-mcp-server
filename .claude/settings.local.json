@@ -25,7 +25,16 @@
       "Bash(./venv/Scripts/python.exe -c \"from src.tools.server_groups import handle_get_server_group_details; print\\(''Tools import OK''\\)\")",
       "Bash(docker stop:*)",
       "Bash(docker rm:*)",
-      "Bash(docker exec:*)"
+      "Bash(docker exec:*)",
+      "Bash(wc:*)",
+      "Bash(python3:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(venvScriptspython -c \"\nimport sys\nsys.path.insert\\(0, ''src''\\)\n\n# Test model imports\nfrom fortimonitor.models import \\(\n    OutageLog, OutageLogListResponse, OutageAction,\n    ServerAttribute, ServerAttributeListResponse,\n    ServerLog, ServerLogListResponse,\n    CloudProvider, CloudProviderListResponse,\n    CloudCredential, CloudCredentialListResponse,\n    CloudDiscovery, CloudDiscoveryListResponse,\n    CloudRegion, CloudRegionListResponse,\n    CloudService, CloudServiceListResponse,\n    DEMApplication, DEMApplicationListResponse,\n    DEMInstance, DEMInstanceListResponse,\n    CompoundService, CompoundServiceListResponse,\n    AgentResourceThreshold, AgentResourceThresholdListResponse,\n\\)\nprint\\(''Models OK''\\)\n\n# Test tool imports\nfrom tools.outage_enhanced import OUTAGE_ENHANCED_TOOL_DEFINITIONS, OUTAGE_ENHANCED_HANDLERS\nprint\\(f''outage_enhanced: {len\\(OUTAGE_ENHANCED_TOOL_DEFINITIONS\\)} tools''\\)\n\nfrom tools.maintenance_enhanced import MAINTENANCE_ENHANCED_TOOL_DEFINITIONS, MAINTENANCE_ENHANCED_HANDLERS\nprint\\(f''maintenance_enhanced: {len\\(MAINTENANCE_ENHANCED_TOOL_DEFINITIONS\\)} tools''\\)\n\nfrom tools.server_enhanced import SERVER_ENHANCED_TOOL_DEFINITIONS, SERVER_ENHANCED_HANDLERS\nprint\\(f''server_enhanced: {len\\(SERVER_ENHANCED_TOOL_DEFINITIONS\\)} tools''\\)\n\nfrom tools.server_groups_enhanced import SERVER_GROUPS_ENHANCED_TOOL_DEFINITIONS, SERVER_GROUPS_ENHANCED_HANDLERS\nprint\\(f''server_groups_enhanced: {len\\(SERVER_GROUPS_ENHANCED_TOOL_DEFINITIONS\\)} tools''\\)\n\nfrom tools.templates_enhanced import TEMPLATES_ENHANCED_TOOL_DEFINITIONS, TEMPLATES_ENHANCED_HANDLERS\nprint\\(f''templates_enhanced: {len\\(TEMPLATES_ENHANCED_TOOL_DEFINITIONS\\)} tools''\\)\n\nfrom tools.cloud import CLOUD_TOOL_DEFINITIONS, CLOUD_HANDLERS\nprint\\(f''cloud: {len\\(CLOUD_TOOL_DEFINITIONS\\)} tools''\\)\n\nfrom tools.dem import DEM_TOOL_DEFINITIONS, DEM_HANDLERS\nprint\\(f''dem: {len\\(DEM_TOOL_DEFINITIONS\\)} tools''\\)\n\nfrom tools.compound_services import COMPOUND_SERVICES_TOOL_DEFINITIONS, COMPOUND_SERVICES_HANDLERS\nprint\\(f''compound_services: {len\\(COMPOUND_SERVICES_TOOL_DEFINITIONS\\)} tools''\\)\n\ntotal_new = sum\\(len\\(d\\) for d in [\n    OUTAGE_ENHANCED_TOOL_DEFINITIONS, MAINTENANCE_ENHANCED_TOOL_DEFINITIONS,\n    SERVER_ENHANCED_TOOL_DEFINITIONS, SERVER_GROUPS_ENHANCED_TOOL_DEFINITIONS,\n    TEMPLATES_ENHANCED_TOOL_DEFINITIONS, CLOUD_TOOL_DEFINITIONS,\n    DEM_TOOL_DEFINITIONS, COMPOUND_SERVICES_TOOL_DEFINITIONS,\n]\\)\nprint\\(f''Total new tools: {total_new}''\\)\n\")",
+      "Bash(git stash:*)",
+      "Bash(docker ps:*)",
+      "Bash(timeout:*)",
+      "Bash(ping:*)"
     ]
   }
 }

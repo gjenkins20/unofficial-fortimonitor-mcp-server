@@ -1,5 +1,6 @@
 """Server group management tools - Phase 2 Priority 3."""
 
+import asyncio
 import logging
 import re
 from typing import List
@@ -22,8 +23,10 @@ def list_server_groups_tool_definition() -> Tool:
     return Tool(
         name="list_server_groups",
         description=(
-            "List all server groups. "
-            "Server groups help organize servers for easier management and monitoring."
+            "List all server groups with their names and IDs. "
+            "Server groups help organize servers for easier management and monitoring. "
+            "This tool also fetches the actual member count for each group. "
+            "For full server details within a group, use get_server_group_details instead."
         ),
         inputSchema={
             "type": "object",
@@ -44,7 +47,9 @@ def get_server_group_details_tool_definition() -> Tool:
         name="get_server_group_details",
         description=(
             "Get detailed information about a specific server group, "
-            "including the list of servers in the group."
+            "including the complete list of member servers and their network services. "
+            "Use this tool to find out how many servers are in a group or to see "
+            "which servers belong to a group."
         ),
         inputSchema={
             "type": "object",
@@ -247,11 +252,37 @@ async def handle_list_server_groups(
             f"Found {len(groups)} group(s):\n"
         ]
 
-        for group in groups:
+        # Fetch actual member counts concurrently for all groups.
+        # The list/detail API endpoints do NOT return server membership data,
+        # so we must query /server_group/{id}/server for each group.
+        # Using asyncio.to_thread for concurrent execution since the client
+        # is synchronous (requests-based).
+        def _fetch_count(group_id):
+            """Fetch server count for a single group."""
+            try:
+                resp = client.get_server_group_servers(group_id, limit=1)
+                return resp.get("meta", {}).get("total_count", 0)
+            except Exception as e:
+                logger.warning(
+                    f"Could not fetch member count for group {group_id}: {e}"
+                )
+                return None
+
+        # Launch all count fetches concurrently
+        count_tasks = [
+            asyncio.to_thread(_fetch_count, group.id) for group in groups
+        ]
+        counts = await asyncio.gather(*count_tasks)
+
+        for group, count in zip(groups, counts):
             output_lines.append(f"\n**{group.name}** (ID: {group.id})")
             if group.description:
                 output_lines.append(f"  Description: {group.description}")
-            output_lines.append(f"  Servers: {group.server_count}")
+
+            if count is not None:
+                output_lines.append(f"  Servers: {count}")
+            else:
+                output_lines.append("  Servers: (unable to retrieve count)")
 
         if response.total_count and response.total_count > len(groups):
             output_lines.append(f"\n(Showing {len(groups)} of {response.total_count} total)")
