@@ -31,7 +31,7 @@ def list_server_templates_tool_definition() -> Tool:
                 "limit": {
                     "type": "integer",
                     "default": 50,
-                    "description": "Maximum number of templates to return (default 50)"
+                    "description":"Maximum number of templates to return (default 50)"
                 }
             }
         }
@@ -51,7 +51,7 @@ def get_server_template_details_tool_definition() -> Tool:
             "properties": {
                 "template_id": {
                     "type": "integer",
-                    "description": "ID of the server template"
+                    "description":"ID of the server template"
                 }
             },
             "required": ["template_id"]
@@ -72,11 +72,11 @@ def apply_template_to_server_tool_definition() -> Tool:
             "properties": {
                 "server_id": {
                     "type": "integer",
-                    "description": "ID of the server to configure"
+                    "description":"ID of the server to configure"
                 },
                 "template_id": {
                     "type": "integer",
-                    "description": "ID of the template to apply"
+                    "description":"ID of the template to apply"
                 }
             },
             "required": ["server_id", "template_id"]
@@ -97,11 +97,11 @@ def apply_template_to_group_tool_definition() -> Tool:
             "properties": {
                 "group_id": {
                     "type": "integer",
-                    "description": "ID of the server group"
+                    "description":"ID of the server group"
                 },
                 "template_id": {
                     "type": "integer",
-                    "description": "ID of the template to apply"
+                    "description":"ID of the template to apply"
                 }
             },
             "required": ["group_id", "template_id"]

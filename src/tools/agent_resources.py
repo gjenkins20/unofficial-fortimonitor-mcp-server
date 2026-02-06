@@ -31,7 +31,7 @@ def list_agent_resource_types_tool_definition() -> Tool:
                 "limit": {
                     "type": "integer",
                     "default": 50,
-                    "description": "Maximum number of types to return (default 50)"
+                    "description":"Maximum number of types to return (default 50)"
                 }
             }
         }
@@ -51,7 +51,7 @@ def get_agent_resource_type_details_tool_definition() -> Tool:
             "properties": {
                 "type_id": {
                     "type": "integer",
-                    "description": "The ID of the agent resource type"
+                    "description":"The ID of the agent resource type"
                 }
             },
             "required": ["type_id"]
@@ -72,12 +72,12 @@ def list_server_resources_tool_definition() -> Tool:
             "properties": {
                 "server_id": {
                     "type": "integer",
-                    "description": "The ID of the server"
+                    "description":"The ID of the server"
                 },
                 "limit": {
                     "type": "integer",
                     "default": 50,
-                    "description": "Maximum number of resources to return (default 50)"
+                    "description":"Maximum number of resources to return (default 50)"
                 }
             },
             "required": ["server_id"]
@@ -98,11 +98,11 @@ def get_resource_details_tool_definition() -> Tool:
             "properties": {
                 "server_id": {
                     "type": "integer",
-                    "description": "The ID of the server"
+                    "description":"The ID of the server"
                 },
                 "resource_id": {
                     "type": "integer",
-                    "description": "The ID of the agent resource"
+                    "description":"The ID of the agent resource"
                 }
             },
             "required": ["server_id", "resource_id"]

@@ -19,7 +19,13 @@
       "Bash(docker run --rm -e FORTIMONITOR_API_KEY=test-key fortimonitor-mcp:test python -c \"from src.config import get_settings; print\\(''Config OK''\\)\")",
       "Bash(docker run --rm -e FORTIMONITOR_API_KEY=test-key fortimonitor-mcp:test python -c \"from mcp.server import Server; print\\(''MCP OK''\\)\")",
       "Bash(docker run:*)",
-      "Bash(docker images:*)"
+      "Bash(docker images:*)",
+      "Bash(venv/Scripts/python.exe:*)",
+      "Bash(./venv/Scripts/python.exe -c \"from src.fortimonitor.client import FortiMonitorClient; print\\(''Import OK''\\)\")",
+      "Bash(./venv/Scripts/python.exe -c \"from src.tools.server_groups import handle_get_server_group_details; print\\(''Tools import OK''\\)\")",
+      "Bash(docker stop:*)",
+      "Bash(docker rm:*)",
+      "Bash(docker exec:*)"
     ]
   }
 }

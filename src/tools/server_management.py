@@ -26,12 +26,12 @@ def set_server_status_tool_definition() -> Tool:
             "properties": {
                 "server_id": {
                     "type": "integer",
-                    "description": "The ID of the server",
+                    "description":"The ID of the server",
                 },
                 "status": {
                     "type": "string",
                     "enum": ["active", "inactive", "paused"],
-                    "description": "New monitoring status for the server",
+                    "description":"New monitoring status for the server",
                 },
             },
             "required": ["server_id", "status"],
@@ -120,15 +120,15 @@ def create_maintenance_window_tool_definition() -> Tool:
                 "server_ids": {
                     "type": "array",
                     "items": {"type": "integer"},
-                    "description": "List of server IDs to include in maintenance window",
+                    "description":"List of server IDs to include in maintenance window",
                 },
                 "duration_hours": {
                     "type": "number",
-                    "description": "Duration in hours (e.g., 2.5 for 2.5 hours)",
+                    "description":"Duration in hours (e.g., 2.5 for 2.5 hours)",
                 },
                 "start_time": {
                     "type": "string",
-                    "description": "When to start (ISO format: YYYY-MM-DDTHH:MM:SSZ), or 'now' to start immediately",
+                    "description":"When to start (ISO format: YYYY-MM-DDTHH:MM:SSZ), or 'now' to start immediately",
                 },
                 "description": {
                     "type": "string",
@@ -234,14 +234,14 @@ def list_maintenance_windows_tool_definition() -> Tool:
                 "active_only": {
                     "type": "boolean",
                     "default": False,
-                    "description": "If true, only show currently active maintenance windows",
+                    "description":"If true, only show currently active maintenance windows",
                 },
                 "limit": {
                     "type": "integer",
                     "default": 50,
                     "minimum": 1,
                     "maximum": 100,
-                    "description": "Maximum number of windows to return",
+                    "description":"Maximum number of windows to return",
                 },
             },
         },

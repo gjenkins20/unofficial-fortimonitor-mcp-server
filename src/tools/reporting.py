@@ -5,7 +5,7 @@ import re
 from typing import List, Dict, Any
 from datetime import datetime
 from collections import Counter
-from mcp.types import TextContent
+from mcp.types import TextContent, Tool
 
 from ..fortimonitor.client import FortiMonitorClient
 from ..fortimonitor.exceptions import APIError
@@ -19,18 +19,18 @@ logger = logging.getLogger(__name__)
 
 def get_system_health_summary_tool_definition():
     """Return tool definition for system health summary."""
-    return {
-        "name": "get_system_health_summary",
-        "description": (
+    return Tool(
+        name= "get_system_health_summary",
+        description= (
             "Get a comprehensive summary of system health including total servers, "
             "active outages, critical issues, and overall status. Provides a high-level "
             "overview of the entire monitoring infrastructure."
         ),
-        "inputSchema": {
+        inputSchema= {
             "type": "object",
             "properties": {}
         }
-    }
+    )
 
 
 async def handle_get_system_health_summary(
@@ -125,13 +125,13 @@ async def handle_get_system_health_summary(
 
 def get_outage_statistics_tool_definition():
     """Return tool definition for outage statistics."""
-    return {
-        "name": "get_outage_statistics",
-        "description": (
+    return Tool(
+        name= "get_outage_statistics",
+        description= (
             "Get statistical analysis of outages including breakdown by severity, "
             "top affected servers, acknowledgment rates, and time-based trends."
         ),
-        "inputSchema": {
+        inputSchema= {
             "type": "object",
             "properties": {
                 "days": {
@@ -139,11 +139,11 @@ def get_outage_statistics_tool_definition():
                     "default": 7,
                     "minimum": 1,
                     "maximum": 90,
-                    "description": "Number of days to analyze (recent outages)"
+                    "description":"Number of days to analyze (recent outages)"
                 }
             }
         }
-    }
+    )
 
 
 async def handle_get_outage_statistics(
@@ -244,17 +244,17 @@ async def handle_get_outage_statistics(
 
 def get_server_statistics_tool_definition():
     """Return tool definition for server statistics."""
-    return {
-        "name": "get_server_statistics",
-        "description": (
+    return Tool(
+        name= "get_server_statistics",
+        description= (
             "Get statistical analysis of servers including distribution by status, "
             "operating systems, tags, and other attributes."
         ),
-        "inputSchema": {
+        inputSchema= {
             "type": "object",
             "properties": {}
         }
-    }
+    )
 
 
 async def handle_get_server_statistics(
@@ -331,13 +331,13 @@ async def handle_get_server_statistics(
 
 def get_top_alerting_servers_tool_definition():
     """Return tool definition for top alerting servers."""
-    return {
-        "name": "get_top_alerting_servers",
-        "description": (
+    return Tool(
+        name= "get_top_alerting_servers",
+        description= (
             "Get a list of servers with the most active outages. "
             "Useful for identifying problematic servers that need attention."
         ),
-        "inputSchema": {
+        inputSchema= {
             "type": "object",
             "properties": {
                 "limit": {
@@ -345,11 +345,11 @@ def get_top_alerting_servers_tool_definition():
                     "default": 10,
                     "minimum": 1,
                     "maximum": 50,
-                    "description": "Number of top servers to return"
+                    "description":"Number of top servers to return"
                 }
             }
         }
-    }
+    )
 
 
 async def handle_get_top_alerting_servers(
@@ -445,29 +445,29 @@ async def handle_get_top_alerting_servers(
 
 def export_servers_list_tool_definition():
     """Return tool definition for exporting servers list."""
-    return {
-        "name": "export_servers_list",
-        "description": (
+    return Tool(
+        name= "export_servers_list",
+        description= (
             "Export a list of all servers with their details in CSV format. "
             "Useful for reporting, analysis, or importing into other systems."
         ),
-        "inputSchema": {
+        inputSchema= {
             "type": "object",
             "properties": {
                 "include_tags": {
                     "type": "boolean",
                     "default": True,
-                    "description": "Include server tags in export"
+                    "description":"Include server tags in export"
                 },
                 "status_filter": {
                     "type": "string",
                     "enum": ["all", "active", "inactive", "paused"],
                     "default": "all",
-                    "description": "Filter servers by status"
+                    "description":"Filter servers by status"
                 }
             }
         }
-    }
+    )
 
 
 async def handle_export_servers_list(
@@ -555,24 +555,24 @@ async def handle_export_servers_list(
 
 def export_outage_history_tool_definition():
     """Return tool definition for exporting outage history."""
-    return {
-        "name": "export_outage_history",
-        "description": (
+    return Tool(
+        name= "export_outage_history",
+        description= (
             "Export active outage history in CSV format. "
             "Useful for incident reports, trend analysis, and documentation."
         ),
-        "inputSchema": {
+        inputSchema= {
             "type": "object",
             "properties": {
                 "severity_filter": {
                     "type": "string",
                     "enum": ["all", "critical", "warning", "info"],
                     "default": "all",
-                    "description": "Filter outages by severity"
+                    "description":"Filter outages by severity"
                 }
             }
         }
-    }
+    )
 
 
 async def handle_export_outage_history(
@@ -652,14 +652,14 @@ async def handle_export_outage_history(
 
 def generate_availability_report_tool_definition():
     """Return tool definition for generating availability report."""
-    return {
-        "name": "generate_availability_report",
-        "description": (
+    return Tool(
+        name= "generate_availability_report",
+        description= (
             "Generate an availability/uptime report for servers. "
             "Shows availability percentage based on active outages. "
             "Useful for SLA reporting and performance tracking."
         ),
-        "inputSchema": {
+        inputSchema= {
             "type": "object",
             "properties": {
                 "days": {
@@ -667,11 +667,11 @@ def generate_availability_report_tool_definition():
                     "default": 30,
                     "minimum": 1,
                     "maximum": 90,
-                    "description": "Number of days for the report period"
+                    "description":"Number of days for the report period"
                 }
             }
         }
-    }
+    )
 
 
 async def handle_generate_availability_report(

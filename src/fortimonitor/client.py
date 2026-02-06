@@ -19,6 +19,8 @@ from .models import (
     OutageNote,
     MaintenanceWindow,
     MaintenanceWindowListResponse,
+    NetworkService,
+    NetworkServiceListResponse,
 )
 from .exceptions import (
     AuthenticationError,
@@ -1116,6 +1118,168 @@ class FortiMonitorClient:
         logger.info(f"Deleting server group {group_id}")
         self._request("DELETE", endpoint)
         return True
+
+    # ============================================================================
+    # NETWORK SERVICE METHODS
+    # ============================================================================
+
+    def get_server_network_services(
+        self, server_id: int, limit: int = 50, offset: int = 0
+    ) -> NetworkServiceListResponse:
+        """
+        Get network services monitored on a specific server.
+
+        Args:
+            server_id: ID of the server
+            limit: Maximum number of results
+            offset: Pagination offset
+
+        Returns:
+            NetworkServiceListResponse object
+
+        Raises:
+            NotFoundError: If server not found
+            APIError: If retrieval fails
+        """
+        endpoint = f"server/{server_id}/network_service"
+        params = {"limit": limit, "offset": offset}
+
+        logger.info(f"Getting network services for server {server_id}")
+        response = self._request("GET", endpoint, params=params)
+        return NetworkServiceListResponse(**response)
+
+    def get_server_group_servers(
+        self, group_id: int, limit: int = 50, offset: int = 0
+    ) -> Dict[str, Any]:
+        """
+        Get servers in a specific server group using the correct API endpoint.
+
+        Uses GET /server_group/{group_id}/server which returns the actual
+        server list for the group.
+
+        Args:
+            group_id: ID of the server group
+            limit: Maximum number of results
+            offset: Pagination offset
+
+        Returns:
+            Raw API response dict with 'server_list' and 'meta' keys
+        """
+        endpoint = f"server_group/{group_id}/server"
+        params = {"limit": limit, "offset": offset}
+
+        logger.info(f"Getting servers for group {group_id} via {endpoint}")
+        return self._request("GET", endpoint, params=params)
+
+    def get_all_server_group_servers(self, group_id: int) -> List[Dict[str, Any]]:
+        """
+        Get ALL servers in a group, handling pagination automatically.
+
+        Uses GET /server_group/{group_id}/server with pagination.
+
+        Args:
+            group_id: ID of the server group
+
+        Returns:
+            List of server dicts from the API
+        """
+        all_servers = []
+        offset = 0
+        limit = 50
+
+        while True:
+            response = self.get_server_group_servers(group_id, limit=limit, offset=offset)
+            servers = response.get("server_list", [])
+
+            if not servers:
+                break
+
+            all_servers.extend(servers)
+            total_count = response.get("meta", {}).get("total_count", 0)
+
+            if len(all_servers) >= total_count:
+                break
+
+            offset += limit
+
+        return all_servers
+
+    def get_group_members_complete(self, group_id: int) -> Dict[str, Any]:
+        """
+        Get complete group membership including servers and their network services.
+
+        Uses GET /server_group/{group_id}/server (the correct endpoint) to
+        retrieve group members directly from the API.
+
+        Args:
+            group_id: The group ID to query
+
+        Returns:
+            Dict with:
+                'group': ServerGroup object
+                'servers': list of dicts with server details + network_services
+                'total_servers': int
+                'total_network_services': int
+                'total_instances': int
+                'discovery_method': str indicating how members were found
+        """
+        group = self.get_server_group_details(group_id)
+
+        # Primary strategy: Use the correct /server_group/{id}/server endpoint
+        server_objects = []
+        discovery_method = "server_group_server_endpoint"
+        try:
+            raw_servers = self.get_all_server_group_servers(group_id)
+            for raw in raw_servers:
+                try:
+                    server_objects.append(Server(**raw))
+                except Exception as e:
+                    logger.warning(f"Failed to parse server from group endpoint: {e}")
+        except Exception as e:
+            logger.warning(
+                f"server_group/{group_id}/server endpoint failed: {e}, "
+                f"falling back to server_group filter"
+            )
+            # Fallback: Query servers filtered by group ID
+            try:
+                response = self.get_servers(server_group=group_id, limit=200)
+                server_objects = response.server_list
+                discovery_method = "server_group_filter"
+            except Exception as e2:
+                logger.warning(f"Fallback server_group query also failed: {e2}")
+                server_objects = []
+                discovery_method = "none"
+
+        # Build detailed server info with network services
+        servers_with_services = []
+        total_network_services = 0
+
+        for server in server_objects:
+            server_info = {
+                "id": server.id,
+                "name": server.name,
+                "fqdn": server.fqdn,
+                "status": server.status,
+                "network_services": [],
+            }
+
+            try:
+                ns_response = self.get_server_network_services(server.id)
+                server_info["network_services"] = ns_response.network_service_list
+                total_network_services += len(ns_response.network_service_list)
+            except Exception as e:
+                logger.warning(f"Failed to get network services for server {server.id}: {e}")
+
+            servers_with_services.append(server_info)
+
+        return {
+            "group": group,
+            "servers": servers_with_services,
+            "total_servers": len(servers_with_services),
+            "total_network_services": total_network_services,
+            "total_instances": len(servers_with_services) + total_network_services,
+            "discovery_method": discovery_method,
+        }
 
     # ============================================================================
     # PHASE 2 - PRIORITY 3: SERVER TEMPLATE METHODS
