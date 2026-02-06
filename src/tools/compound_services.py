@@ -260,6 +260,30 @@ def list_compound_service_outages_tool_definition() -> Tool:
     )
 
 
+def get_compound_service_network_service_details_tool_definition() -> Tool:
+    """Return tool definition for getting a specific network service in a compound service."""
+    return Tool(
+        name="get_compound_service_network_service_details",
+        description=(
+            "Get detailed information about a specific network service within a compound service."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "service_id": {
+                    "type": "integer",
+                    "description": "ID of the compound service"
+                },
+                "network_service_id": {
+                    "type": "integer",
+                    "description": "ID of the network service"
+                }
+            },
+            "required": ["service_id", "network_service_id"]
+        }
+    )
+
+
 # ============================================================================
 # HELPER FUNCTIONS
 # ============================================================================
@@ -827,6 +851,62 @@ async def handle_list_compound_service_outages(
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
 
+async def handle_get_compound_service_network_service_details(
+    arguments: dict,
+    client: FortiMonitorClient
+) -> List[TextContent]:
+    """Handle get_compound_service_network_service_details tool execution."""
+    try:
+        service_id = arguments["service_id"]
+        ns_id = arguments["network_service_id"]
+
+        logger.info(
+            f"Getting network service {ns_id} details "
+            f"for compound service {service_id}"
+        )
+
+        response = client._request(
+            "GET",
+            f"compound_service/{service_id}/network_service/{ns_id}"
+        )
+
+        name = response.get("name", response.get("display_name", "Unknown"))
+        output_lines = [
+            f"**Network Service: {name}** (ID: {ns_id})\n",
+            f"Compound Service ID: {service_id}"
+        ]
+
+        if response.get("status"):
+            output_lines.append(f"Status: {response['status']}")
+        if response.get("port"):
+            output_lines.append(f"Port: {response['port']}")
+        if response.get("frequency"):
+            output_lines.append(f"Frequency: {response['frequency']}s")
+
+        # Include any other relevant fields
+        for key, value in response.items():
+            if key not in ("name", "display_name", "url", "resource_uri",
+                          "status", "port", "frequency") and value:
+                output_lines.append(f"{key}: {value}")
+
+        return [TextContent(type="text", text="\n".join(output_lines))]
+
+    except NotFoundError:
+        return [TextContent(
+            type="text",
+            text=(
+                f"Error: Network service {arguments.get('network_service_id')} "
+                f"not found in compound service {arguments.get('service_id')}."
+            )
+        )]
+    except APIError as e:
+        logger.error(f"API error getting compound service network service: {e}")
+        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except Exception as e:
+        logger.exception("Unexpected error getting compound service network service")
+        return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
+
+
 # ============================================================================
 # EXPORT DICTS
 # ============================================================================
@@ -842,6 +922,7 @@ COMPOUND_SERVICES_TOOL_DEFINITIONS = {
     "list_compound_service_network_services": list_compound_service_network_services_tool_definition,
     "get_compound_service_response_time": get_compound_service_response_time_tool_definition,
     "list_compound_service_outages": list_compound_service_outages_tool_definition,
+    "get_compound_service_network_service_details": get_compound_service_network_service_details_tool_definition,
 }
 
 COMPOUND_SERVICES_HANDLERS = {
@@ -855,4 +936,5 @@ COMPOUND_SERVICES_HANDLERS = {
     "list_compound_service_network_services": handle_list_compound_service_network_services,
     "get_compound_service_response_time": handle_get_compound_service_response_time,
     "list_compound_service_outages": handle_list_compound_service_outages,
+    "get_compound_service_network_service_details": handle_get_compound_service_network_service_details,
 }

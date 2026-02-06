@@ -881,6 +881,99 @@ def _extract_id_from_url(url: str) -> str:
     return "N/A"
 
 
+def create_historical_outage_tool_definition() -> Tool:
+    """Return tool definition for creating a historical outage."""
+    return Tool(
+        name="create_historical_outage",
+        description=(
+            "Create a historical outage record. Use this to manually add past incidents "
+            "for record-keeping and reporting purposes."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "server_id": {
+                    "type": "integer",
+                    "description": "ID of the server the outage occurred on",
+                },
+                "start_time": {
+                    "type": "string",
+                    "description": "Start time of the outage (e.g., '2026-01-15T10:00:00Z')",
+                },
+                "end_time": {
+                    "type": "string",
+                    "description": "End time of the outage (e.g., '2026-01-15T11:30:00Z')",
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the historical outage",
+                },
+                "severity": {
+                    "type": "string",
+                    "description": "Severity level (e.g., 'critical', 'warning', 'info')",
+                },
+            },
+            "required": ["server_id", "start_time", "end_time"],
+        },
+    )
+
+
+async def handle_create_historical_outage(
+    arguments: dict,
+    client: FortiMonitorClient,
+) -> List[TextContent]:
+    """Handle create_historical_outage tool execution."""
+    try:
+        server_id = arguments["server_id"]
+        start_time = arguments["start_time"]
+        end_time = arguments["end_time"]
+        description = arguments.get("description")
+        severity = arguments.get("severity")
+
+        logger.info(f"Creating historical outage for server {server_id}")
+
+        data = {
+            "server": f"{client.base_url}/server/{server_id}",
+            "start_time": start_time,
+            "end_time": end_time,
+        }
+        if description:
+            data["description"] = description
+        if severity:
+            data["severity"] = severity
+
+        response = client._request("POST", "historical_outage", json_data=data)
+
+        output_lines = [
+            "**Historical Outage Created**\n",
+            f"Server ID: {server_id}",
+            f"Start: {start_time}",
+            f"End: {end_time}",
+        ]
+        if description:
+            output_lines.append(f"Description: {description}")
+        if severity:
+            output_lines.append(f"Severity: {severity}")
+
+        if isinstance(response, dict) and response.get("url"):
+            outage_id = _extract_id_from_url(response["url"])
+            output_lines.append(f"Outage ID: {outage_id}")
+
+        return [TextContent(type="text", text="\n".join(output_lines))]
+
+    except NotFoundError:
+        return [TextContent(
+            type="text",
+            text=f"Error: Server {arguments.get('server_id')} not found."
+        )]
+    except APIError as e:
+        logger.error(f"API error creating historical outage: {e}")
+        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except Exception as e:
+        logger.exception("Unexpected error creating historical outage")
+        return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
+
+
 # ============================================================================
 # EXPORTED DICTS
 # ============================================================================
@@ -899,6 +992,7 @@ OUTAGE_ENHANCED_TOOL_DEFINITIONS = {
     "get_outage_actions": get_outage_actions_tool_definition,
     "list_outage_logs": list_outage_logs_tool_definition,
     "update_outage_description": update_outage_description_tool_definition,
+    "create_historical_outage": create_historical_outage_tool_definition,
 }
 
 OUTAGE_ENHANCED_HANDLERS = {
@@ -914,4 +1008,5 @@ OUTAGE_ENHANCED_HANDLERS = {
     "get_outage_actions": handle_get_outage_actions,
     "list_outage_logs": handle_list_outage_logs,
     "update_outage_description": handle_update_outage_description,
+    "create_historical_outage": handle_create_historical_outage,
 }

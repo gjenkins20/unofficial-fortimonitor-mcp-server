@@ -6,35 +6,30 @@ import sys
 import os
 
 # Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 class TestFortiMonitorClient:
     """Tests for FortiMonitorClient class."""
 
     @pytest.fixture
-    def mock_settings(self):
-        """Create mock settings."""
-        mock = MagicMock()
-        mock.api_base_url = "https://api2.panopta.com/v2"
-        mock.fortimonitor_api_key = "test_api_key"
-        mock.schema_cache_dir = MagicMock()
-        mock.schema_cache_dir.mkdir = MagicMock()
-        return mock
+    def mock_env(self, monkeypatch):
+        """Set env vars needed by Settings."""
+        monkeypatch.setenv("FORTIMONITOR_API_KEY", "test_api_key")
+        monkeypatch.setenv("FORTIMONITOR_BASE_URL", "https://api2.panopta.com/v2")
 
     @pytest.fixture
-    def client(self, mock_settings):
+    def client(self, mock_env, tmp_path):
         """Create a FortiMonitorClient with mocked settings."""
-        with patch("src.fortimonitor.client.settings") as mock_settings_func:
-            mock_settings_func.return_value = mock_settings
-            from src.fortimonitor.client import FortiMonitorClient
+        from src.fortimonitor.client import FortiMonitorClient
 
-            client = FortiMonitorClient(
-                base_url="https://api2.panopta.com/v2",
-                api_key="test_api_key",
-                enable_schema_cache=False,
-            )
-            return client
+        client = FortiMonitorClient(
+            base_url="https://api2.panopta.com/v2",
+            api_key="test_api_key",
+            enable_schema_cache=False,
+            schema_cache_dir=tmp_path,
+        )
+        return client
 
     def test_client_initialization(self, client):
         """Test client can be initialized."""
@@ -43,33 +38,34 @@ class TestFortiMonitorClient:
         assert client.api_key == "test_api_key"
         assert client.schema is not None
 
-    def test_client_base_url_strips_trailing_slash(self, mock_settings):
+    def test_client_base_url_strips_trailing_slash(self, mock_env, tmp_path):
         """Test that trailing slash is stripped from base URL."""
-        with patch("src.fortimonitor.client.settings") as mock_settings_func:
-            mock_settings_func.return_value = mock_settings
-            from src.fortimonitor.client import FortiMonitorClient
+        from src.fortimonitor.client import FortiMonitorClient
 
-            client = FortiMonitorClient(
-                base_url="https://api2.panopta.com/v2/",
-                api_key="test_api_key",
-                enable_schema_cache=False,
-            )
-            assert client.base_url == "https://api2.panopta.com/v2"
+        client = FortiMonitorClient(
+            base_url="https://api2.panopta.com/v2/",
+            api_key="test_api_key",
+            enable_schema_cache=False,
+            schema_cache_dir=tmp_path,
+        )
+        assert client.base_url == "https://api2.panopta.com/v2"
 
     @patch("requests.Session.request")
     def test_get_servers_returns_response(self, mock_request, client):
         """Test getting server list returns structured response."""
-        # Mock API response
         mock_response = Mock()
         mock_response.status_code = 200
+        mock_response.text = '{"server_list": [], "meta": {}}'
         mock_response.json.return_value = {
             "server_list": [
-                {"id": 1, "name": "test-server-1"},
-                {"id": 2, "name": "test-server-2"},
+                {"url": "https://api2.panopta.com/v2/server/1", "name": "test-server-1"},
+                {"url": "https://api2.panopta.com/v2/server/2", "name": "test-server-2"},
             ],
-            "limit": 50,
-            "offset": 0,
-            "total_count": 2,
+            "meta": {
+                "limit": 50,
+                "offset": 0,
+                "total_count": 2,
+            },
         }
         mock_response.raise_for_status = Mock()
         mock_request.return_value = mock_response
@@ -77,19 +73,19 @@ class TestFortiMonitorClient:
         response = client.get_servers(limit=50)
 
         assert hasattr(response, "server_list")
-        assert hasattr(response, "limit")
-        assert hasattr(response, "offset")
         assert isinstance(response.server_list, list)
         assert len(response.server_list) == 2
         assert response.server_list[0].name == "test-server-1"
+        assert response.server_list[0].id == 1
 
     @patch("requests.Session.request")
     def test_get_server_details(self, mock_request, client):
         """Test getting server details."""
         mock_response = Mock()
         mock_response.status_code = 200
+        mock_response.text = '{"url": "...", "name": "..."}'
         mock_response.json.return_value = {
-            "id": 123,
+            "url": "https://api2.panopta.com/v2/server/123",
             "name": "production-web-01",
             "fqdn": "web01.example.com",
             "status": "active",
@@ -108,18 +104,21 @@ class TestFortiMonitorClient:
         """Test getting outages."""
         mock_response = Mock()
         mock_response.status_code = 200
+        mock_response.text = '{"outage_list": [], "meta": {}}'
         mock_response.json.return_value = {
             "outage_list": [
                 {
-                    "id": 1,
+                    "url": "https://api2.panopta.com/v2/outage/1",
                     "severity": "critical",
                     "status": "active",
                     "start_time": "2026-01-30T10:00:00Z",
                 }
             ],
-            "limit": 50,
-            "offset": 0,
-            "total_count": 1,
+            "meta": {
+                "limit": 50,
+                "offset": 0,
+                "total_count": 1,
+            },
         }
         mock_response.raise_for_status = Mock()
         mock_request.return_value = mock_response
@@ -137,6 +136,7 @@ class TestFortiMonitorClient:
 
         mock_response = Mock()
         mock_response.status_code = 401
+        mock_response.text = "Unauthorized"
         mock_request.return_value = mock_response
 
         with pytest.raises(AuthenticationError):
@@ -149,6 +149,7 @@ class TestFortiMonitorClient:
 
         mock_response = Mock()
         mock_response.status_code = 404
+        mock_response.text = "Not found"
         mock_request.return_value = mock_response
 
         with pytest.raises(NotFoundError):
@@ -161,6 +162,7 @@ class TestFortiMonitorClient:
 
         mock_response = Mock()
         mock_response.status_code = 429
+        mock_response.text = "Too many requests"
         mock_request.return_value = mock_response
 
         with pytest.raises(RateLimitError):

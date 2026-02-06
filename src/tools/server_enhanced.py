@@ -1398,6 +1398,305 @@ async def handle_flush_server_dns(
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
 
+def list_server_path_monitoring_tool_definition() -> Tool:
+    """Return tool definition for listing server path monitoring."""
+    return Tool(
+        name="list_server_path_monitoring",
+        description=(
+            "List path monitoring configurations for a server. "
+            "Path monitoring tracks network routes to the server."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "server_id": {
+                    "type": "integer",
+                    "description": "ID of the server",
+                },
+                "limit": {
+                    "type": "integer",
+                    "default": 50,
+                    "description": "Maximum number of results to return (default 50)",
+                },
+            },
+            "required": ["server_id"],
+        },
+    )
+
+
+def create_server_path_monitoring_tool_definition() -> Tool:
+    """Return tool definition for creating server path monitoring."""
+    return Tool(
+        name="create_server_path_monitoring",
+        description=(
+            "Create a new path monitoring configuration for a server. "
+            "Path monitoring tracks network routes and hop performance."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "server_id": {
+                    "type": "integer",
+                    "description": "ID of the server",
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Optional name for the path monitoring configuration",
+                },
+            },
+            "required": ["server_id"],
+        },
+    )
+
+
+def delete_server_path_monitoring_tool_definition() -> Tool:
+    """Return tool definition for deleting server path monitoring."""
+    return Tool(
+        name="delete_server_path_monitoring",
+        description=(
+            "Delete a path monitoring configuration from a server."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "server_id": {
+                    "type": "integer",
+                    "description": "ID of the server",
+                },
+                "path_monitoring_id": {
+                    "type": "integer",
+                    "description": "ID of the path monitoring configuration to delete",
+                },
+            },
+            "required": ["server_id", "path_monitoring_id"],
+        },
+    )
+
+
+def get_path_monitoring_results_tool_definition() -> Tool:
+    """Return tool definition for getting path monitoring results."""
+    return Tool(
+        name="get_path_monitoring_results",
+        description=(
+            "Get the results/data for a specific path monitoring configuration. "
+            "Shows network hop information and latency data."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "server_id": {
+                    "type": "integer",
+                    "description": "ID of the server",
+                },
+                "path_monitoring_id": {
+                    "type": "integer",
+                    "description": "ID of the path monitoring configuration",
+                },
+            },
+            "required": ["server_id", "path_monitoring_id"],
+        },
+    )
+
+
+async def handle_list_server_path_monitoring(
+    arguments: dict,
+    client: FortiMonitorClient,
+) -> List[TextContent]:
+    """Handle list_server_path_monitoring tool execution."""
+    try:
+        server_id = arguments["server_id"]
+        limit = arguments.get("limit", 50)
+
+        logger.info(f"Listing path monitoring for server {server_id}")
+
+        response = client._request(
+            "GET",
+            f"server/{server_id}/path_monitoring",
+            params={"limit": limit},
+        )
+
+        items = response.get("path_monitoring_list", [])
+        meta = response.get("meta", {})
+
+        if not items:
+            return [TextContent(
+                type="text",
+                text=f"No path monitoring configurations found for server {server_id}."
+            )]
+
+        total_count = meta.get("total_count", len(items))
+        output_lines = [
+            f"**Path Monitoring for Server {server_id}**\n",
+            f"Found {len(items)} configuration(s):\n"
+        ]
+
+        for item in items:
+            name = item.get("name", "Unknown")
+            item_id = "N/A"
+            if item.get("url"):
+                parts = item["url"].rstrip("/").split("/")
+                if parts:
+                    item_id = parts[-1]
+            output_lines.append(f"\n**{name}** (ID: {item_id})")
+            if item.get("status"):
+                output_lines.append(f"  Status: {item['status']}")
+
+        if total_count > len(items):
+            output_lines.append(f"\n(Showing {len(items)} of {total_count} total)")
+
+        return [TextContent(type="text", text="\n".join(output_lines))]
+
+    except NotFoundError:
+        return [TextContent(
+            type="text",
+            text=f"Error: Server {arguments.get('server_id')} not found."
+        )]
+    except APIError as e:
+        logger.error(f"API error listing path monitoring: {e}")
+        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except Exception as e:
+        logger.exception("Unexpected error listing path monitoring")
+        return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
+
+
+async def handle_create_server_path_monitoring(
+    arguments: dict,
+    client: FortiMonitorClient,
+) -> List[TextContent]:
+    """Handle create_server_path_monitoring tool execution."""
+    try:
+        server_id = arguments["server_id"]
+        name = arguments.get("name")
+
+        logger.info(f"Creating path monitoring for server {server_id}")
+
+        data = {}
+        if name:
+            data["name"] = name
+
+        response = client._request(
+            "POST",
+            f"server/{server_id}/path_monitoring",
+            json_data=data if data else None,
+        )
+
+        output_lines = [
+            "**Path Monitoring Created**\n",
+            f"Server ID: {server_id}",
+        ]
+        if name:
+            output_lines.append(f"Name: {name}")
+
+        if isinstance(response, dict) and response.get("url"):
+            parts = response["url"].rstrip("/").split("/")
+            if parts:
+                output_lines.append(f"Path Monitoring ID: {parts[-1]}")
+
+        return [TextContent(type="text", text="\n".join(output_lines))]
+
+    except NotFoundError:
+        return [TextContent(
+            type="text",
+            text=f"Error: Server {arguments.get('server_id')} not found."
+        )]
+    except APIError as e:
+        logger.error(f"API error creating path monitoring: {e}")
+        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except Exception as e:
+        logger.exception("Unexpected error creating path monitoring")
+        return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
+
+
+async def handle_delete_server_path_monitoring(
+    arguments: dict,
+    client: FortiMonitorClient,
+) -> List[TextContent]:
+    """Handle delete_server_path_monitoring tool execution."""
+    try:
+        server_id = arguments["server_id"]
+        pm_id = arguments["path_monitoring_id"]
+
+        logger.info(f"Deleting path monitoring {pm_id} from server {server_id}")
+
+        client._request(
+            "DELETE",
+            f"server/{server_id}/path_monitoring/{pm_id}",
+        )
+
+        return [TextContent(
+            type="text",
+            text=(
+                f"**Path Monitoring Deleted**\n\n"
+                f"Path monitoring {pm_id} has been removed from server {server_id}."
+            )
+        )]
+
+    except NotFoundError:
+        return [TextContent(
+            type="text",
+            text=f"Error: Path monitoring {arguments.get('path_monitoring_id')} not found on server {arguments.get('server_id')}."
+        )]
+    except APIError as e:
+        logger.error(f"API error deleting path monitoring: {e}")
+        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except Exception as e:
+        logger.exception("Unexpected error deleting path monitoring")
+        return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
+
+
+async def handle_get_path_monitoring_results(
+    arguments: dict,
+    client: FortiMonitorClient,
+) -> List[TextContent]:
+    """Handle get_path_monitoring_results tool execution."""
+    try:
+        server_id = arguments["server_id"]
+        pm_id = arguments["path_monitoring_id"]
+
+        logger.info(f"Getting path monitoring results for {pm_id} on server {server_id}")
+
+        response = client._request(
+            "GET",
+            f"server/{server_id}/path_monitoring/{pm_id}/results",
+        )
+
+        output_lines = [
+            f"**Path Monitoring Results** (ID: {pm_id}, Server: {server_id})\n"
+        ]
+
+        if isinstance(response, dict):
+            # Show hops if available
+            hops = response.get("hops", response.get("results", []))
+            if isinstance(hops, list) and hops:
+                output_lines.append(f"Hops: {len(hops)}\n")
+                for hop in hops[:30]:
+                    if isinstance(hop, dict):
+                        hop_num = hop.get("hop", hop.get("number", "?"))
+                        host = hop.get("host", hop.get("ip", "Unknown"))
+                        latency = hop.get("latency", hop.get("rtt", ""))
+                        output_lines.append(f"  {hop_num}. {host} ({latency}ms)")
+                if len(hops) > 30:
+                    output_lines.append(f"  ... and {len(hops) - 30} more hops")
+            else:
+                for key, value in response.items():
+                    if key not in ("url", "resource_uri", "success", "status_code") and value:
+                        output_lines.append(f"{key}: {value}")
+
+        return [TextContent(type="text", text="\n".join(output_lines))]
+
+    except NotFoundError:
+        return [TextContent(
+            type="text",
+            text=f"Error: Path monitoring {arguments.get('path_monitoring_id')} not found on server {arguments.get('server_id')}."
+        )]
+    except APIError as e:
+        logger.error(f"API error getting path monitoring results: {e}")
+        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except Exception as e:
+        logger.exception("Unexpected error getting path monitoring results")
+        return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
+
+
 # ============================================================================
 # MODULE EXPORTS
 # ============================================================================
@@ -1418,6 +1717,10 @@ SERVER_ENHANCED_TOOL_DEFINITIONS = {
     "create_server_log": create_server_log_tool_definition,
     "create_custom_incident": create_custom_incident_tool_definition,
     "flush_server_dns": flush_server_dns_tool_definition,
+    "list_server_path_monitoring": list_server_path_monitoring_tool_definition,
+    "create_server_path_monitoring": create_server_path_monitoring_tool_definition,
+    "delete_server_path_monitoring": delete_server_path_monitoring_tool_definition,
+    "get_path_monitoring_results": get_path_monitoring_results_tool_definition,
 }
 
 SERVER_ENHANCED_HANDLERS = {
@@ -1436,4 +1739,8 @@ SERVER_ENHANCED_HANDLERS = {
     "create_server_log": handle_create_server_log,
     "create_custom_incident": handle_create_custom_incident,
     "flush_server_dns": handle_flush_server_dns,
+    "list_server_path_monitoring": handle_list_server_path_monitoring,
+    "create_server_path_monitoring": handle_create_server_path_monitoring,
+    "delete_server_path_monitoring": handle_delete_server_path_monitoring,
+    "get_path_monitoring_results": handle_get_path_monitoring_results,
 }
