@@ -36,3 +36,9 @@ cache/
 
 *.tmp
 nul
+
+# AI index files
+*_ai_index.json
+
+# Pip artifacts
+=*
