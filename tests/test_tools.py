@@ -5,8 +5,11 @@ from unittest.mock import Mock, MagicMock, AsyncMock
 import sys
 import os
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+# Add project root to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+# Helper to build API-like URLs
+API_BASE = "https://api2.panopta.com/v2"
 
 
 class TestServerTools:
@@ -47,15 +50,12 @@ class TestServerTools:
         from src.tools.servers import handle_get_servers
         from src.fortimonitor.models import ServerListResponse, Server
 
-        # Mock response
         mock_client.get_servers.return_value = ServerListResponse(
             server_list=[
-                Server(id=1, name="test-server-1"),
-                Server(id=2, name="test-server-2"),
+                Server(url=f"{API_BASE}/server/1", name="test-server-1"),
+                Server(url=f"{API_BASE}/server/2", name="test-server-2"),
             ],
-            limit=50,
-            offset=0,
-            total_count=2,
+            meta={"limit": 50, "offset": 0, "total_count": 2},
         )
 
         result = await handle_get_servers({"limit": 50}, mock_client)
@@ -72,7 +72,8 @@ class TestServerTools:
         from src.fortimonitor.models import ServerListResponse
 
         mock_client.get_servers.return_value = ServerListResponse(
-            server_list=[], limit=50, offset=0, total_count=0
+            server_list=[],
+            meta={"limit": 50, "offset": 0, "total_count": 0},
         )
 
         result = await handle_get_servers({}, mock_client)
@@ -87,7 +88,7 @@ class TestServerTools:
         from src.fortimonitor.models import Server
 
         mock_client.get_server_details.return_value = Server(
-            id=123,
+            url=f"{API_BASE}/server/123",
             name="production-web-01",
             fqdn="web01.example.com",
             status="active",
@@ -130,16 +131,14 @@ class TestOutageTools:
         mock_client.get_outages.return_value = OutageListResponse(
             outage_list=[
                 Outage(
-                    id=1,
+                    url=f"{API_BASE}/outage/1",
                     severity="critical",
                     status="active",
                     start_time=datetime.now(),
                     server_name="test-server",
                 )
             ],
-            limit=50,
-            offset=0,
-            total_count=1,
+            meta={"limit": 50, "offset": 0, "total_count": 1},
         )
 
         result = await handle_get_outages({"hours_back": 24}, mock_client)
@@ -155,7 +154,8 @@ class TestOutageTools:
         from src.fortimonitor.models import OutageListResponse
 
         mock_client.get_active_outages.return_value = OutageListResponse(
-            outage_list=[], limit=50, offset=0, total_count=0
+            outage_list=[],
+            meta={"limit": 50, "offset": 0, "total_count": 0},
         )
 
         result = await handle_get_outages({"active_only": True}, mock_client)
@@ -187,24 +187,27 @@ class TestMetricsTools:
     async def test_handle_get_server_metrics_success(self, mock_client):
         """Test successful get_server_metrics execution."""
         from src.tools.metrics import handle_get_server_metrics
-        from src.fortimonitor.models import AgentResource
+        from src.fortimonitor.models import AgentResourceListResponse, AgentResource
 
-        mock_client.get_server_agent_resources.return_value = [
-            AgentResource(
-                id=1,
-                name="CPU Usage",
-                resource_type="cpu",
-                current_value=45.2,
-                unit="%",
-            ),
-            AgentResource(
-                id=2,
-                name="Memory Usage",
-                resource_type="memory",
-                current_value=72.5,
-                unit="%",
-            ),
-        ]
+        mock_client.get_server_agent_resources.return_value = AgentResourceListResponse(
+            agent_resource_list=[
+                AgentResource(
+                    url=f"{API_BASE}/server/123/agent_resource/1",
+                    name="CPU Usage",
+                    agent_resource_type="cpu",
+                    current_value=45.2,
+                    unit="%",
+                ),
+                AgentResource(
+                    url=f"{API_BASE}/server/123/agent_resource/2",
+                    name="Memory Usage",
+                    agent_resource_type="memory",
+                    current_value=72.5,
+                    unit="%",
+                ),
+            ],
+            meta={"limit": 50, "offset": 0, "total_count": 2},
+        )
 
         result = await handle_get_server_metrics({"server_id": 123}, mock_client)
 
@@ -216,8 +219,12 @@ class TestMetricsTools:
     async def test_handle_get_server_metrics_empty(self, mock_client):
         """Test get_server_metrics with no resources."""
         from src.tools.metrics import handle_get_server_metrics
+        from src.fortimonitor.models import AgentResourceListResponse
 
-        mock_client.get_server_agent_resources.return_value = []
+        mock_client.get_server_agent_resources.return_value = AgentResourceListResponse(
+            agent_resource_list=[],
+            meta={"limit": 50, "offset": 0, "total_count": 0},
+        )
 
         result = await handle_get_server_metrics({"server_id": 123}, mock_client)
 

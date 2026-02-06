@@ -212,6 +212,27 @@ def get_server_maintenance_schedules_tool_definition() -> Tool:
     )
 
 
+def list_active_or_pending_maintenance_tool_definition() -> Tool:
+    """Return tool definition for listing active or pending maintenance schedules."""
+    return Tool(
+        name="list_active_or_pending_maintenance",
+        description=(
+            "List maintenance schedules that are currently active or pending (scheduled). "
+            "Useful for quickly seeing what maintenance is in progress or upcoming."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer",
+                    "default": 50,
+                    "description": "Maximum number of schedules to return (default 50)",
+                },
+            },
+        },
+    )
+
+
 # ============================================================================
 # TOOL HANDLERS
 # ============================================================================
@@ -759,6 +780,86 @@ async def handle_get_server_maintenance_schedules(
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
 
+async def handle_list_active_or_pending_maintenance(
+    arguments: dict,
+    client: FortiMonitorClient,
+) -> List[TextContent]:
+    """Handle list_active_or_pending_maintenance tool execution."""
+    try:
+        limit = arguments.get("limit", 50)
+
+        logger.info(f"Listing active or pending maintenance schedules (limit={limit})")
+
+        response = client._request(
+            "GET",
+            "maintenance_schedule/active_or_pending",
+            params={"limit": limit},
+        )
+
+        schedules = response.get("maintenance_schedule_list", [])
+        meta = response.get("meta", {})
+
+        if not schedules:
+            return [
+                TextContent(
+                    type="text",
+                    text="No active or pending maintenance schedules found.",
+                )
+            ]
+
+        total_count = meta.get("total_count", len(schedules))
+
+        output_lines = [
+            "**Active or Pending Maintenance Schedules**\n",
+            f"Found {len(schedules)} schedule(s):\n",
+        ]
+
+        for sched in schedules:
+            sched_id = "N/A"
+            if sched.get("url"):
+                match = re.search(r'/maintenance_schedule/(\d+)', sched["url"])
+                if match:
+                    sched_id = match.group(1)
+            elif sched.get("id"):
+                sched_id = sched["id"]
+
+            name = sched.get("name", "Unnamed")
+            output_lines.append(f"\n**{name}** (ID: {sched_id})")
+
+            if sched.get("start"):
+                output_lines.append(f"  Start: {sched['start']}")
+            if sched.get("end"):
+                output_lines.append(f"  End: {sched['end']}")
+            if sched.get("description"):
+                output_lines.append(f"  Description: {sched['description']}")
+            if sched.get("status"):
+                output_lines.append(f"  Status: {sched['status']}")
+
+            # Show server count if available
+            servers = sched.get("servers", [])
+            if servers:
+                output_lines.append(f"  Servers: {len(servers)}")
+
+        if total_count > len(schedules):
+            output_lines.append(
+                f"\n(Showing {len(schedules)} of {total_count} total)"
+            )
+
+        return [TextContent(type="text", text="\n".join(output_lines))]
+
+    except APIError as e:
+        logger.error(f"API error listing active/pending maintenance: {e}")
+        return [
+            TextContent(
+                type="text",
+                text=f"Error listing active/pending maintenance: {str(e)}",
+            )
+        ]
+    except Exception as e:
+        logger.exception("Unexpected error")
+        return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
+
+
 # ============================================================================
 # MODULE EXPORTS
 # ============================================================================
@@ -772,6 +873,7 @@ MAINTENANCE_ENHANCED_TOOL_DEFINITIONS = {
     "resume_maintenance_schedule": resume_maintenance_schedule_tool_definition,
     "terminate_maintenance_schedule": terminate_maintenance_schedule_tool_definition,
     "get_server_maintenance_schedules": get_server_maintenance_schedules_tool_definition,
+    "list_active_or_pending_maintenance": list_active_or_pending_maintenance_tool_definition,
 }
 
 MAINTENANCE_ENHANCED_HANDLERS = {
@@ -783,4 +885,5 @@ MAINTENANCE_ENHANCED_HANDLERS = {
     "resume_maintenance_schedule": handle_resume_maintenance_schedule,
     "terminate_maintenance_schedule": handle_terminate_maintenance_schedule,
     "get_server_maintenance_schedules": handle_get_server_maintenance_schedules,
+    "list_active_or_pending_maintenance": handle_list_active_or_pending_maintenance,
 }

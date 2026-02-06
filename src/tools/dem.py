@@ -200,6 +200,62 @@ def get_dem_locations_tool_definition() -> Tool:
     )
 
 
+def update_dem_instance_path_monitoring_tool_definition() -> Tool:
+    """Return tool definition for updating DEM instance path monitoring."""
+    return Tool(
+        name="update_dem_instance_path_monitoring",
+        description=(
+            "Update path monitoring configuration for a DEM application instance. "
+            "Path monitoring tracks specific URL paths within the application."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "application_id": {
+                    "type": "integer",
+                    "description": "ID of the DEM application"
+                },
+                "instance_id": {
+                    "type": "integer",
+                    "description": "ID of the DEM instance"
+                },
+                "paths": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "List of URL paths to monitor"
+                }
+            },
+            "required": ["application_id", "instance_id"]
+        }
+    )
+
+
+def update_dem_location_tool_definition() -> Tool:
+    """Return tool definition for updating DEM application locations."""
+    return Tool(
+        name="update_dem_location",
+        description=(
+            "Update monitoring locations for a DEM application. "
+            "Changes which geographic locations are used for monitoring checks."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "application_id": {
+                    "type": "integer",
+                    "description": "ID of the DEM application"
+                },
+                "location_ids": {
+                    "type": "array",
+                    "items": {"type": "integer"},
+                    "description": "List of location IDs to assign to this application"
+                }
+            },
+            "required": ["application_id"]
+        }
+    )
+
+
 # ============================================================================
 # HELPER FUNCTIONS
 # ============================================================================
@@ -609,6 +665,114 @@ async def handle_get_dem_locations(
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
 
+async def handle_update_dem_instance_path_monitoring(
+    arguments: dict,
+    client: FortiMonitorClient
+) -> List[TextContent]:
+    """Handle update_dem_instance_path_monitoring tool execution."""
+    try:
+        application_id = arguments["application_id"]
+        instance_id = arguments["instance_id"]
+        paths = arguments.get("paths", [])
+
+        logger.info(
+            f"Updating path monitoring for DEM app {application_id} "
+            f"instance {instance_id}"
+        )
+
+        data = {}
+        if paths:
+            data["paths"] = paths
+
+        client._request(
+            "PUT",
+            f"dem_application/{application_id}/instance/{instance_id}/path_monitoring",
+            json_data=data
+        )
+
+        output_lines = [
+            "**DEM Instance Path Monitoring Updated**\n",
+            f"Application ID: {application_id}",
+            f"Instance ID: {instance_id}",
+        ]
+
+        if paths:
+            output_lines.append(f"Paths: {len(paths)} path(s) configured")
+            for path in paths[:10]:
+                output_lines.append(f"  - {path}")
+            if len(paths) > 10:
+                output_lines.append(f"  ... and {len(paths) - 10} more")
+
+        return [TextContent(type="text", text="\n".join(output_lines))]
+
+    except NotFoundError:
+        return [TextContent(
+            type="text",
+            text=(
+                f"Error: DEM application {arguments.get('application_id')} "
+                f"or instance {arguments.get('instance_id')} not found."
+            )
+        )]
+    except APIError as e:
+        logger.error(f"API error updating DEM instance path monitoring: {e}")
+        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except Exception as e:
+        logger.exception("Unexpected error updating DEM instance path monitoring")
+        return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
+
+
+async def handle_update_dem_location(
+    arguments: dict,
+    client: FortiMonitorClient
+) -> List[TextContent]:
+    """Handle update_dem_location tool execution."""
+    try:
+        application_id = arguments["application_id"]
+        location_ids = arguments.get("location_ids", [])
+
+        logger.info(f"Updating locations for DEM application {application_id}")
+
+        data = {}
+        if location_ids:
+            data["locations"] = [
+                f"{client.base_url}/monitoring_node/{lid}" for lid in location_ids
+            ]
+
+        client._request(
+            "PUT",
+            f"dem_application/{application_id}/location",
+            json_data=data
+        )
+
+        output_lines = [
+            "**DEM Application Locations Updated**\n",
+            f"Application ID: {application_id}",
+        ]
+
+        if location_ids:
+            output_lines.append(f"Locations: {len(location_ids)} location(s) assigned")
+            for lid in location_ids[:10]:
+                output_lines.append(f"  - Location ID: {lid}")
+            if len(location_ids) > 10:
+                output_lines.append(f"  ... and {len(location_ids) - 10} more")
+        else:
+            output_lines.append("Locations: Updated")
+
+        return [TextContent(type="text", text="\n".join(output_lines))]
+
+    except NotFoundError:
+        return [TextContent(
+            type="text",
+            text=f"Error: DEM application {arguments.get('application_id')} not found."
+        )]
+    except APIError as e:
+        logger.error(f"API error updating DEM locations: {e}")
+        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except Exception as e:
+        logger.exception("Unexpected error updating DEM locations")
+        return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
+
+
 # ============================================================================
 # EXPORT DICTS
 # ============================================================================
@@ -622,6 +786,8 @@ DEM_TOOL_DEFINITIONS = {
     "list_dem_instances": list_dem_instances_tool_definition,
     "create_dem_instance": create_dem_instance_tool_definition,
     "get_dem_locations": get_dem_locations_tool_definition,
+    "update_dem_instance_path_monitoring": update_dem_instance_path_monitoring_tool_definition,
+    "update_dem_location": update_dem_location_tool_definition,
 }
 
 DEM_HANDLERS = {
@@ -633,4 +799,6 @@ DEM_HANDLERS = {
     "list_dem_instances": handle_list_dem_instances,
     "create_dem_instance": handle_create_dem_instance,
     "get_dem_locations": handle_get_dem_locations,
+    "update_dem_instance_path_monitoring": handle_update_dem_instance_path_monitoring,
+    "update_dem_location": handle_update_dem_location,
 }
