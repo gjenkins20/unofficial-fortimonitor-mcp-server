@@ -348,18 +348,27 @@ RESOURCE_HANDLERS = {
 
 ---
 
-## Upcoming Tasks (Post-Implementation)
+## Post-Implementation Tasks — COMPLETED ✅
 
-### Documentation — Developer Guide
+### Documentation — Developer Guide ✅
+Created `docs/DEVELOPER_GUIDE.md` covering:
 - Architecture overview (client → tools → server registry)
 - How to add new tools (both tuple and dict patterns)
 - API client quirks (ID extraction, empty responses, datetime format)
 - Docker build/run instructions
 - Environment variable reference
 
-### Documentation — End-User Guide
+### Documentation — End-User Guide ✅
+Created `docs/USER_GUIDE.md` covering:
 - Installation and setup (Docker vs local)
 - Configuration (API key, base URL)
 - Tool reference catalog (all 241 tools with descriptions and parameters)
 - Common workflows and usage examples
 - Troubleshooting
+
+### Documentation — Windows Deployment Guide ✅
+Created `docs/WINDOWS_DEPLOYMENT.md` covering:
+- Claude Desktop and Claude Code setup on Windows 10/11
+
+### README Update ✅
+Updated `README.md` to reflect full 241-tool implementation with categorized tool table, accurate project structure, and links to all guides.
