@@ -2,20 +2,34 @@
 
 Model Context Protocol (MCP) server for FortiMonitor/Panopta v2 API integration with Claude AI.
 
+**241 tools** across 33 modules providing near-complete coverage of the FortiMonitor v2 API.
+
 ## Features
 
-- **Server Management**: List and retrieve details for monitored servers
-- **Outage Monitoring**: Query active and resolved outages (alerts)
-- **Metrics Access**: Retrieve agent resource metrics for servers
-- **Schema Discovery**: Runtime API schema validation and caching
-- **Real-time Integration**: Direct API access during Claude conversations
-- **Docker Support**: Easy deployment via Docker containers
+- **Server Management** — CRUD, tagging, attributes, DNS flush, path monitoring, logs
+- **Outage Monitoring** — Query, acknowledge, escalate, broadcast, delay, historical incidents
+- **Metrics & Resources** — Agent resources, SNMP resources, thresholds, metric graphs
+- **Maintenance Windows** — Create, extend, pause, resume, terminate schedules
+- **Server Groups** — Group CRUD, membership, compound services, child groups, monitoring policies
+- **Templates** — Create, apply, reapply monitoring templates to servers and groups
+- **Notifications** — Schedules, contacts, contact groups, rotating on-call contacts
+- **Cloud Monitoring** — Providers, credentials, discovery, regions, services
+- **DEM** — Digital Experience Monitoring applications, instances, locations
+- **Compound Services** — Aggregated service CRUD, thresholds, availability, response time
+- **Dashboards & Status Pages** — CRUD for monitoring dashboards and public status pages
+- **Reporting** — System health summary, outage statistics, availability reports, CSV exports
+- **SNMP** — Credentials, discovery, resource CRUD, metrics
+- **OnSight** — On-premises monitoring instances and groups
+- **Fabric Connections** — Integration management
+- **Countermeasures** — Automated remediation on network services and thresholds
+- **User Management** — User CRUD, roles, addons
+- **Reference Data** — Contact types, timezones, roles, account history, server attribute types
+- **Docker Support** — Easy deployment via Docker containers
+- **Windows Support** — Native deployment on Windows for Claude Desktop and Claude Code
 
 ## Quick Start
 
 ### Option A: Docker (Recommended)
-
-The easiest way to run the FortiMonitor MCP Server:
 
 ```bash
 # Run with Docker
@@ -61,6 +75,10 @@ python test_connectivity.py
 python -m src.server
 ```
 
+### Option C: Windows (Claude Desktop / Claude Code)
+
+See [docs/WINDOWS_DEPLOYMENT.md](docs/WINDOWS_DEPLOYMENT.md) for step-by-step Windows instructions.
+
 ## Configuration
 
 Edit `.env`:
@@ -71,57 +89,36 @@ FORTIMONITOR_API_KEY=your_api_key_here
 LOG_LEVEL=INFO
 ```
 
-## Available Tools
+## Available Tools (241)
 
-### 1. get_servers
+The server exposes 241 MCP tools organized into the following categories. For full parameter details, see the [End-User Guide](docs/USER_GUIDE.md).
 
-List monitored servers with filtering support.
-
-**Parameters:**
-- `name` (string): Filter by server name (partial match)
-- `fqdn` (string): Filter by FQDN
-- `server_group` (integer): Filter by server group ID
-- `status` (string): Filter by server status
-- `tags` (array): Filter by tags
-- `limit` (integer): Maximum results (default: 50)
-- `offset` (integer): Pagination offset
-
-**Example**: "Show me all servers in production"
-
-### 2. get_server_details
-
-Get detailed information about a specific server.
-
-**Parameters:**
-- `server_id` (integer, required): ID of the server
-- `full` (boolean): Resolve all URLs to actual objects
-
-**Example**: "Get details for server 12345"
-
-### 3. get_outages
-
-Query outages (alerts) with various filters.
-
-**Parameters:**
-- `server_id` (integer): Filter by specific server ID
-- `severity` (string): Filter by outage severity
-- `status` (string): Filter by status (active, resolved)
-- `hours_back` (integer): How many hours back to search (default: 24)
-- `limit` (integer): Maximum results (default: 50)
-- `active_only` (boolean): Only return active outages
-
-**Example**: "Show me critical outages from the last 6 hours"
-
-### 4. get_server_metrics
-
-Retrieve agent resource metrics for a server.
-
-**Parameters:**
-- `server_id` (integer, required): ID of the server
-- `limit` (integer): Maximum resources to return (default: 50)
-- `full` (boolean): Resolve all URLs to actual objects
-
-**Example**: "Show metrics for server 12345"
+| Category | Module(s) | Tools | Description |
+|----------|-----------|-------|-------------|
+| **Servers** | `servers`, `server_enhanced` | 21 | List, detail, CRUD, attributes, logs, DNS, path monitoring |
+| **Outages** | `outages`, `outage_management`, `outage_enhanced` | 22 | Query, health check, acknowledge, escalate, broadcast, delay, historical |
+| **Metrics** | `metrics`, `agent_resources` | 6 | Server metrics, agent resource types, resource details |
+| **Maintenance** | `server_management`, `maintenance_enhanced` | 12 | Status management, maintenance window CRUD, extend, pause, resume |
+| **Bulk Operations** | `bulk_operations` | 6 | Bulk acknowledge, bulk tags, advanced search, active outages |
+| **Server Groups** | `server_groups`, `server_groups_enhanced` | 12 | Group CRUD, membership, policies, compound services, child groups |
+| **Templates** | `templates`, `templates_enhanced` | 8 | Template CRUD, apply to server/group, reapply |
+| **Notifications** | `notifications`, `notifications_enhanced` | 14 | Schedules, contacts, groups, schedule CRUD, sub-resource queries |
+| **Contacts** | `contacts_enhanced`, `rotating_contacts` | 18 | Contact CRUD, contact info, contact groups, on-call rotations |
+| **Cloud** | `cloud` | 15 | Providers, credentials, discovery, regions, services |
+| **DEM** | `dem` | 10 | Applications, instances, locations, path monitoring |
+| **Compound Services** | `compound_services` | 11 | Service CRUD, thresholds, availability, network services, response time |
+| **Dashboards** | `dashboards` | 5 | Dashboard CRUD |
+| **Status Pages** | `status_pages` | 5 | Public status page CRUD |
+| **Network Services** | `network_services` | 5 | Server network service CRUD, response time |
+| **Monitoring Nodes** | `monitoring_nodes` | 2 | List and detail monitoring nodes |
+| **Network Service Types** | `network_service_types` | 2 | List and detail service types |
+| **Reporting** | `reporting` | 10 | Health summary, statistics, top alerting, exports, availability reports |
+| **Users** | `users` | 6 | User CRUD, addons |
+| **Reference Data** | `reference_data` | 13 | Account history, contact types, roles, timezones, attribute types |
+| **SNMP** | `snmp` | 12 | Credentials CRUD, discovery, resource CRUD, metrics |
+| **OnSight** | `onsight` | 12 | OnSight CRUD, groups, countermeasures, servers |
+| **Fabric** | `fabric` | 4 | Fabric connection CRUD |
+| **Countermeasures** | `countermeasures` | 20 | Network service & threshold countermeasures, outage metadata, thresholds |
 
 ## Integration with Claude Desktop
 
@@ -210,49 +207,82 @@ flake8 src/ tests/
 ```
 fortimonitor-mcp-server/
 ├── README.md
-├── DOCKER_DEPLOYMENT.md       # Docker deployment guide
-├── Dockerfile                 # Container definition
-├── docker-compose.yml         # Docker Compose config
+├── REMAINING_WORK_INSTRUCTIONS.md  # Implementation status & coding reference
+├── FORTIMONITOR_API_DOCS.md        # FortiMonitor API documentation
+├── Dockerfile                      # Container definition
+├── docker-compose.yml              # Docker Compose config
 ├── requirements.txt
-├── setup.py
 ├── pyproject.toml
 ├── .env.example
 ├── .gitignore
 ├── .dockerignore
 ├── test_connectivity.py
-├── scripts/                   # Build and deployment scripts
+├── scripts/                        # Build and deployment scripts
 │   ├── build.sh / build.bat
 │   ├── test-container.sh / test-container.bat
 │   ├── push.sh
 │   └── release.sh
 ├── .github/
 │   └── workflows/
-│       └── docker-build.yml   # CI/CD pipeline
+│       └── docker-build.yml        # CI/CD pipeline
 ├── src/
 │   ├── __init__.py
 │   ├── __main__.py
-│   ├── server.py              # Main MCP server
-│   ├── config.py              # Configuration management
+│   ├── server.py                   # MCP server entrypoint, dispatch registry
+│   ├── config.py                   # Pydantic settings from env vars / .env
 │   ├── fortimonitor/
-│   │   ├── __init__.py
-│   │   ├── client.py          # FortiMonitor API client
-│   │   ├── schema.py          # Schema discovery & validation
-│   │   ├── models.py          # Data models
-│   │   └── exceptions.py      # Custom exceptions
-│   └── tools/
-│       ├── __init__.py
-│       ├── servers.py         # Server-related tools
-│       ├── outages.py         # Outage-related tools
-│       └── metrics.py         # Metrics-related tools
+│   │   ├── client.py               # Synchronous HTTP client (requests lib)
+│   │   ├── schema.py               # Schema discovery & caching
+│   │   ├── models.py               # Pydantic data models (~50 models)
+│   │   └── exceptions.py           # Custom exceptions
+│   └── tools/                      # 33 tool module files (241 tools)
+│       ├── servers.py              # Server list/detail
+│       ├── server_enhanced.py      # Server CRUD, attributes, logs, path monitoring
+│       ├── outages.py              # Outage queries, health check
+│       ├── outage_management.py    # Acknowledge, notes, details
+│       ├── outage_enhanced.py      # Broadcast, escalate, delay, historical
+│       ├── metrics.py              # Server metrics
+│       ├── agent_resources.py      # Agent resource types & details
+│       ├── server_management.py    # Status management, maintenance
+│       ├── maintenance_enhanced.py # Maintenance CRUD, extend, pause
+│       ├── bulk_operations.py      # Bulk ops, advanced search
+│       ├── server_groups.py        # Server group CRUD
+│       ├── server_groups_enhanced.py # Group members, policies, children
+│       ├── templates.py            # Template list/detail/apply
+│       ├── templates_enhanced.py   # Template CRUD, reapply
+│       ├── notifications.py        # Notification schedules/contacts/groups
+│       ├── notifications_enhanced.py # Schedule CRUD, sub-resources
+│       ├── contacts_enhanced.py    # Contact CRUD, info, groups
+│       ├── rotating_contacts.py    # On-call rotation management
+│       ├── network_services.py     # Network service CRUD, response time
+│       ├── network_service_types.py # Service type list/detail
+│       ├── monitoring_nodes.py     # Monitoring node list/detail
+│       ├── cloud.py                # Cloud providers, credentials, discovery
+│       ├── dem.py                  # DEM applications, instances, locations
+│       ├── compound_services.py    # Compound service CRUD, thresholds
+│       ├── dashboards.py           # Dashboard CRUD
+│       ├── status_pages.py         # Status page CRUD
+│       ├── reporting.py            # Health, stats, exports, availability
+│       ├── users.py                # User CRUD, addons
+│       ├── reference_data.py       # Account history, types, roles, timezones
+│       ├── snmp.py                 # SNMP credentials, discovery, resources
+│       ├── onsight.py              # OnSight CRUD, groups
+│       ├── fabric.py               # Fabric connection CRUD
+│       └── countermeasures.py      # Countermeasures, thresholds, metadata
 ├── tests/
-│   ├── __init__.py
-│   ├── test_client.py
-│   └── test_tools.py
+│   ├── conftest.py                 # Test fixtures
+│   ├── test_client.py              # API client tests
+│   ├── test_tools.py               # Original tool tests
+│   ├── test_tool_definitions.py    # Tool definition validation
+│   ├── test_dict_tool_handlers.py  # Dict-pattern handler tests
+│   ├── test_registry.py            # Registry build tests
+│   └── test_server.py              # Server integration tests
 ├── cache/
-│   └── schemas/               # Cached API schemas
+│   └── schemas/                    # Cached API schemas
 └── docs/
-    ├── API_REFERENCE.md
-    └── DEPLOYMENT.md
+    ├── USER_GUIDE.md               # End-user guide
+    ├── DEVELOPER_GUIDE.md          # Developer/contributor guide
+    └── WINDOWS_DEPLOYMENT.md       # Windows setup for Claude Desktop/Code
 ```
 
 ## Troubleshooting
