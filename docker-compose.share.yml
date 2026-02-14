@@ -1,0 +1,51 @@
+# =============================================================================
+# FortiMonitor MCP Server - Simplified Docker Compose for End Users
+# =============================================================================
+#
+# Quick Start:
+#   1. Create a .env file with: FORTIMONITOR_API_KEY=your-api-key
+#   2. Run: docker-compose -f docker-compose.share.yml up -d
+#
+# =============================================================================
+
+services:
+  fortimonitor-mcp:
+    image: ghcr.io/gjenkins20/fortimonitor-mcp:latest
+    container_name: fortimonitor-mcp
+
+    # Environment variables
+    environment:
+      # Required: Your FortiMonitor API Key
+      - FORTIMONITOR_API_KEY=${FORTIMONITOR_API_KEY}
+
+      # Optional: Customize these as needed
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS:-100}
+      - RATE_LIMIT_PERIOD=${RATE_LIMIT_PERIOD:-60}
+
+    # Persist cache between restarts
+    volumes:
+      - fortimonitor-cache:/app/cache
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+    # Security
+    security_opt:
+      - no-new-privileges:true
+
+    # Keep container alive for MCP server invocation
+    stdin_open: true
+    tty: false
+
+# Named volumes
+volumes:
+  fortimonitor-cache:
+    driver: local
