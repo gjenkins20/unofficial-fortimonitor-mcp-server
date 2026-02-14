@@ -45,15 +45,23 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\nComplete P1-P4 implementation: 241 tools, all tests passing, documentation added\n\n- Added 16 new tool modules \\(P3/P4\\): contacts_enhanced, countermeasures,\n  dashboards, fabric, monitoring_nodes, network_service_types,\n  network_services, notifications_enhanced, onsight, reference_data,\n  rotating_contacts, snmp, status_pages, users\n- Patched 5 existing tool modules with P2/P3 gap closures: compound_services,\n  dem, maintenance_enhanced, outage_enhanced, server_enhanced\n- Updated server.py registry to include all 33 tool modules \\(241 tools total\\)\n- Fixed legacy test files \\(test_client, test_server, test_tools\\) to match\n  actual model interfaces \\(url-based IDs, meta-based pagination\\)\n- Added 4 new test files: conftest, test_dict_tool_handlers, test_registry,\n  test_tool_definitions \\(165 tests all passing\\)\n- Added docs/DEVELOPER_GUIDE.md and docs/USER_GUIDE.md\n- Added REMAINING_WORK_INSTRUCTIONS.md for implementation tracking\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git rm:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nRemove ad-hoc scripts and artifacts, update .gitignore\n\nRemoved 15 files that are no longer needed:\n- =0.9.0: empty pip artifact\n- fortimonitor_ai_index.json: generated AI index\n- fix_tool_definitions.py, fix_tool_definitions_final.py: one-time fix scripts\n- test_priority[1-5].py, check_server.py, debug_api.py, test_config.py,\n  test_connectivity.py, verify_server_status.py, test_mcp.ps1: ad-hoc\n  test/debug scripts superseded by the tests/ suite\n\nUpdated .gitignore to prevent future AI index and pip artifacts.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Windows deployment guide for Claude Desktop and Claude Code\n\nDocuments the validated Windows 11 deployment process including the\ncmd /c workaround for cwd, virtual environment setup, Docker options,\nClaude Code CLI config, troubleshooting table, and copy-paste-ready\nJSON configurations.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git push:*)",
-      "Bash(gh pr create:*)",
-      "Bash(winget install:*)",
-      "Bash(export PATH=\"$PATH:/c/Program Files/GitHub CLI:/c/Program Files \\(x86\\)/GitHub CLI\")",
-      "Bash(gh pr view:*)",
-      "Bash(gh pr merge:*)",
+      "Bash(git rev-parse:*)",
       "Bash(git fetch:*)",
-      "Bash(git commit:*)"
+      "Bash(brew install:*)",
+      "Bash(pip install:*)",
+      "Bash(pip3 install:*)",
+      "Bash(pipx install:*)",
+      "Bash(gitleaks detect:*)",
+      "Bash(~/.local/bin/pip-audit:*)",
+      "Bash(~/.local/bin/bandit -r src/ -ll)",
+      "Bash(docker scout cves:*)",
+      "Bash(trivy image:*)",
+      "Bash(docker info:*)",
+      "Bash(docker tag:*)",
+      "Bash(docker push:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd security fixes and sharing documentation for Docker deployment\n\n- Dockerfile: Upgrade pip, wheel, setuptools to fix CVE-2025-8869,\n  CVE-2026-24049, CVE-2026-23949 \\(HIGH severity vulnerabilities\\)\n- Add DOCKER_QUICKSTART.md for colleague onboarding via ghcr.io\n- Add docker-compose.share.yml for simplified container deployment\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(git pull:*)"
     ]
   }
 }
