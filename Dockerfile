@@ -20,6 +20,9 @@ COPY requirements.txt .
 # Create a separate requirements file for production only
 RUN grep -v "^pytest\|^black\|^flake8\|^mypy\|^types-" requirements.txt > requirements-prod.txt || cp requirements.txt requirements-prod.txt
 
+# Upgrade pip and wheel to fix security vulnerabilities (CVE-2025-8869, CVE-2026-24049)
+RUN pip install --no-cache-dir --upgrade pip wheel setuptools
+
 # Install Python dependencies to user directory
 RUN pip install --no-cache-dir --user -r requirements-prod.txt
 
@@ -38,6 +41,10 @@ LABEL org.opencontainers.image.authors="gjenkins20@gmail.com"
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip, wheel, and setuptools to fix security vulnerabilities
+# CVE-2025-8869 (pip), CVE-2026-24049 (wheel), CVE-2026-23949 (jaraco.context in setuptools)
+RUN pip install --no-cache-dir --upgrade pip wheel setuptools --root-user-action=ignore
 
 # Create non-root user for security
 RUN useradd -m -u 1000 -s /bin/bash mcpuser
