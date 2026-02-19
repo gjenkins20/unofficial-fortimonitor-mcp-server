@@ -146,15 +146,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Update Docker Hub description
-        uses: peter-evans/dockerhub-description@v4
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
-          short-description: "FortiMonitor MCP Server for Claude Desktop integration"
-          readme-filepath: ./DOCKER_DEPLOYMENT.md
-
   # ==========================================================================
   # Push to GitHub Container Registry (optional)
   # ==========================================================================
