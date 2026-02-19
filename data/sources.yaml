@@ -1,0 +1,65 @@
+# =============================================================================
+# FortiMonitor Knowledge Base — Source Definitions
+# =============================================================================
+#
+# This file defines the documentation sources to ingest into the knowledge base.
+# Run ingestion with: python scripts/ingest.py
+#
+# =============================================================================
+
+# PDF documentation sources
+# Each entry needs either a 'url' (downloaded automatically) or 'path' (local file)
+pdf_sources:
+  - name: "FortiMonitor Data Sheet"
+    url: "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortimonitor.pdf"
+    description: "FortiMonitor product data sheet"
+
+  # NOTE: FortiMonitor User Guide, Admin Guide, and Release Notes PDFs
+  # were removed — the docs.fortinet.com PDF URLs return 500 errors.
+  # Web versions are crawled via web_sources below instead.
+
+  # Local project documentation
+  - name: "FortiMonitor API Documentation"
+    path: "FORTIMONITOR_API_DOCS.md"
+    description: "API endpoint documentation for the Panopta v2 REST API"
+
+  - name: "MCP Server User Guide"
+    path: "docs/USER_GUIDE.md"
+    description: "End-user guide for the FortiMonitor MCP Server"
+
+  - name: "MCP Server Developer Guide"
+    path: "docs/DEVELOPER_GUIDE.md"
+    description: "Developer guide for contributing to the MCP Server"
+
+  - name: "MCP Server Project Detail"
+    path: "docs/PROJECT_DETAIL.md"
+    description: "Detailed project architecture and design documentation"
+
+  - name: "Docker Deployment Guide"
+    path: "DOCKER_DEPLOYMENT.md"
+    description: "Docker deployment instructions"
+
+  - name: "Docker Quickstart"
+    path: "DOCKER_QUICKSTART.md"
+    description: "Quick start guide for Docker deployment"
+
+  - name: "Windows Deployment Guide"
+    path: "docs/WINDOWS_DEPLOYMENT.md"
+    description: "Windows deployment instructions"
+
+  - name: "Windows Server 2025 Install Guide"
+    path: "docs/WINDOWS_SERVER_2025_INSTALL.md"
+    description: "Installation guide for Windows Server 2025"
+
+# Web documentation sources
+# Each entry needs a 'url' (seed URL for crawling) and optional 'depth' limit
+web_sources:
+  - name: "Fortinet Privacy Policy"
+    url: "https://www.fortinet.com/corporate/about-us/privacy"
+    depth: 1
+    description: "Fortinet corporate privacy policy"
+
+  - name: "FortiMonitor Web Docs"
+    url: "https://docs.fortinet.com/product/fortimonitor"
+    depth: 3
+    description: "FortiMonitor product documentation portal"
