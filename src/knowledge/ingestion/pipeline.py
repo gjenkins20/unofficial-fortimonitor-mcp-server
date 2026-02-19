@@ -1,7 +1,7 @@
 """Ingestion pipeline orchestrator.
 
 Coordinates the full flow: fetch source > parse > chunk > embed > store.
-Supports both PDF and web content sources.
+Supports PDF, Markdown, and web content sources.
 """
 
 import logging
@@ -154,6 +154,53 @@ class IngestionPipeline:
         finally:
             Path(tmp_path).unlink(missing_ok=True)
 
+    def ingest_markdown(
+        self,
+        md_path: str,
+        source_name: Optional[str] = None,
+        force: bool = False,
+    ) -> int:
+        """Ingest a local Markdown file.
+
+        Args:
+            md_path: Path to the Markdown file.
+            source_name: Display name for the source (defaults to filename).
+            force: If True, re-ingest even if source already exists.
+
+        Returns:
+            Number of chunks stored.
+        """
+        path = Path(md_path)
+        source_name = source_name or path.name
+
+        if not path.exists():
+            raise FileNotFoundError(f"Markdown file not found: {md_path}")
+
+        if not force and self.store.has_source(source_name):
+            logger.info(f"Source '{source_name}' already ingested, skipping")
+            return 0
+
+        if force:
+            self.store.delete_by_source(source_name)
+
+        markdown_text = path.read_text(encoding="utf-8")
+
+        chunks = self.chunker.chunk_text(
+            text=markdown_text,
+            source_type="markdown",
+            source_name=source_name,
+            source_path=str(path.absolute()),
+        )
+
+        if not chunks:
+            logger.warning(f"No chunks generated from {source_name}")
+            return 0
+
+        chunks = self.embedder.embed_chunks(chunks)
+        count = self.store.add_chunks(chunks)
+        logger.info(f"Ingested {count} chunks from Markdown: {source_name}")
+        return count
+
     def ingest_web(
         self,
         url: str,
@@ -224,7 +271,7 @@ class IngestionPipeline:
         sources_processed = 0
         errors = []
 
-        # Process PDF sources
+        # Process PDF/document sources
         if source_filter in (None, "pdf"):
             for pdf_source in sources_config.get("pdf_sources", []):
                 try:
@@ -236,19 +283,32 @@ class IngestionPipeline:
                             force=force,
                         )
                     elif "path" in pdf_source:
-                        count = self.ingest_pdf(
-                            pdf_path=pdf_source["path"],
-                            source_name=name,
-                            force=force,
-                        )
+                        file_path = pdf_source["path"]
+                        # Resolve relative paths against config file directory
+                        resolved = Path(config_path).parent / file_path
+                        if not resolved.exists():
+                            # Try relative to project root
+                            resolved = Path(file_path)
+                        if file_path.endswith(".md"):
+                            count = self.ingest_markdown(
+                                md_path=str(resolved),
+                                source_name=name,
+                                force=force,
+                            )
+                        else:
+                            count = self.ingest_pdf(
+                                pdf_path=str(resolved),
+                                source_name=name,
+                                force=force,
+                            )
                     else:
-                        logger.warning(f"PDF source '{name}' has no url or path")
+                        logger.warning(f"Source '{name}' has no url or path")
                         continue
 
                     total_chunks += count
                     sources_processed += 1
                 except Exception as e:
-                    logger.error(f"Error ingesting PDF '{name}': {e}")
+                    logger.error(f"Error ingesting '{name}': {e}")
                     errors.append({"source": name, "error": str(e)})
 
         # Process web sources (requires web_crawler)

@@ -49,5 +49,9 @@ agents/
 # Knowledge layer data
 data/vectordb/
 
-# Virtual environment (macOS)
+# Virtual environments (macOS)
 .venv/
+.venv312/
+
+# macOS
+.DS_Store

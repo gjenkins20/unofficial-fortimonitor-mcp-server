@@ -59,7 +59,9 @@ class VectorStore:
 
         db = self._ensure_db()
 
-        if CHUNKS_TABLE in db.table_names():
+        existing = db.list_tables()
+        table_list = existing.tables if hasattr(existing, 'tables') else list(existing)
+        if CHUNKS_TABLE in table_list:
             self._table = db.open_table(CHUNKS_TABLE)
             logger.info(f"Opened existing table '{CHUNKS_TABLE}'")
         else:
@@ -127,7 +129,7 @@ class VectorStore:
         """
         table = self._ensure_table()
 
-        query = table.search(query_embedding).limit(top_k)
+        query = table.search(query_embedding).metric("cosine").limit(top_k)
 
         if source_type:
             query = query.where(f"source_type = '{source_type}'")

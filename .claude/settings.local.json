@@ -73,7 +73,23 @@
       "Bash(.venv/bin/pip:*)",
       "Bash(.venv/bin/pytest:*)",
       "Bash(FORTIMONITOR_API_KEY=test-key .venv/bin/python -m pytest:*)",
-      "Bash(FORTIMONITOR_API_KEY=test-key .venv/bin/python:*)"
+      "Bash(FORTIMONITOR_API_KEY=test-key .venv/bin/python:*)",
+      "Bash(brew list:*)",
+      "Bash(python3.12 -m venv:*)",
+      "Bash(/Users/gregorijenkins/Programming/fortimonitor-mcp-server/.venv312/bin/python --version)",
+      "Bash(/Users/gregorijenkins/Programming/fortimonitor-mcp-server/.venv312/bin/pip install --upgrade pip wheel setuptools)",
+      "Bash(/Users/gregorijenkins/Programming/fortimonitor-mcp-server/.venv312/bin/pip install:*)",
+      "Bash(/Users/gregorijenkins/Programming/fortimonitor-mcp-server/.venv312/bin/python:*)",
+      "Bash(/opt/homebrew/bin/brew list:*)",
+      "Bash(/opt/homebrew/bin/brew install:*)",
+      "Bash(/opt/homebrew/bin/python3.12:*)",
+      "Bash(FORTIMONITOR_API_KEY=test-key .venv312/bin/python -m pytest:*)",
+      "Bash(.venv312/bin/python:*)",
+      "Bash(.venv312/bin/pip install:*)",
+      "Bash(.venv312/bin/python:*)",
+      "Bash(.venv312/bin/pip:*)",
+      "Bash(.venv312/bin/pytest:*)",
+      "Bash(git check-ignore:*)"
     ]
   }
 }
