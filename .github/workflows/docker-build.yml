@@ -92,6 +92,24 @@ jobs:
             ${{ env.IMAGE_NAME }}:test \
             python -c "from src.tools.servers import get_servers_tool_definition; t = get_servers_tool_definition(); assert t.name == 'get_servers'"
 
+          echo "Testing: Knowledge Layer imports..."
+          docker run --rm \
+            -e FORTIMONITOR_API_KEY=test-key \
+            ${{ env.IMAGE_NAME }}:test \
+            python -c "from src.knowledge.store.vector_store import VectorStore; print('Knowledge store OK')"
+
+          echo "Testing: Ingestion pipeline imports..."
+          docker run --rm \
+            -e FORTIMONITOR_API_KEY=test-key \
+            ${{ env.IMAGE_NAME }}:test \
+            python -c "from src.knowledge.ingestion.pipeline import IngestionPipeline; print('Pipeline OK')"
+
+          echo "Testing: Embedding model cached..."
+          docker run --rm \
+            -e FORTIMONITOR_API_KEY=test-key \
+            ${{ env.IMAGE_NAME }}:test \
+            python -c "from sentence_transformers import SentenceTransformer; m = SentenceTransformer('all-MiniLM-L6-v2'); print(f'Model OK: {m.get_sentence_embedding_dimension()}d')"
+
           echo "All tests passed!"
 
   # ==========================================================================

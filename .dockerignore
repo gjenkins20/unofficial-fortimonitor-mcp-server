@@ -53,9 +53,12 @@ coverage.xml
 tests/
 
 # Documentation
-docs/
 *.md
 !README.md
+!FORTIMONITOR_API_DOCS.md
+!DOCKER_DEPLOYMENT.md
+!DOCKER_QUICKSTART.md
+!docs/
 
 # Logs and temporary files
 *.log
