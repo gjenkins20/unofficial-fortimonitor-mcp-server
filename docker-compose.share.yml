@@ -23,23 +23,36 @@ services:
       - RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS:-100}
       - RATE_LIMIT_PERIOD=${RATE_LIMIT_PERIOD:-60}
 
-    # Persist cache between restarts
+      # Knowledge Layer (auto-ingests on first launch)
+      - KNOWLEDGE_AUTO_INGEST=${KNOWLEDGE_AUTO_INGEST:-true}
+      - KNOWLEDGE_BASE_PATH=/app/data/vectordb
+
+    # Persist cache and knowledge base between restarts
     volumes:
       - fortimonitor-cache:/app/cache
+      - fortimonitor-vectordb:/app/data/vectordb
 
     # Restart policy
     restart: unless-stopped
 
-    # Resource limits
+    # Resource limits (increased for Knowledge Layer)
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2048M
 
     # Security
     security_opt:
       - no-new-privileges:true
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "from src.config import get_settings; s = get_settings(); print('OK')"]
+      interval: 60s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
 
     # Keep container alive for MCP server invocation
     stdin_open: true
@@ -48,4 +61,6 @@ services:
 # Named volumes
 volumes:
   fortimonitor-cache:
+    driver: local
+  fortimonitor-vectordb:
     driver: local
