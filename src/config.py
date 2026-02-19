@@ -51,6 +51,32 @@ class Settings(BaseSettings):
         default=60, description="Rate limit period in seconds"
     )
 
+    # Knowledge Base Configuration
+    knowledge_base_path: Path = Field(
+        default=Path("data/vectordb"),
+        description="Path to the LanceDB vector store directory",
+    )
+    knowledge_embedding_model: str = Field(
+        default="all-MiniLM-L6-v2",
+        description="Sentence-transformers model for embeddings",
+    )
+    knowledge_chunk_size: int = Field(
+        default=800,
+        description="Target chunk size in tokens for document splitting",
+    )
+    knowledge_chunk_overlap: int = Field(
+        default=100,
+        description="Overlap between consecutive chunks in tokens",
+    )
+    knowledge_auto_ingest: bool = Field(
+        default=False,
+        description="Auto-ingest documentation on first launch if store is empty",
+    )
+    knowledge_sources_file: Path = Field(
+        default=Path("data/sources.yaml"),
+        description="Path to the YAML file defining documentation sources",
+    )
+
     @property
     def api_base_url(self) -> str:
         """Get API base URL as string."""

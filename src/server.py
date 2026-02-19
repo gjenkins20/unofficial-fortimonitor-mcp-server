@@ -220,6 +220,23 @@ from .tools.onsight import (
     ONSIGHT_HANDLERS,
 )
 
+# Knowledge Layer tools
+from .knowledge.tools.search import (
+    KNOWLEDGE_SEARCH_TOOL_DEFINITIONS,
+    KNOWLEDGE_SEARCH_HANDLERS,
+)
+from .knowledge.tools.search import configure as configure_search
+from .knowledge.tools.retrieval import (
+    KNOWLEDGE_RETRIEVAL_TOOL_DEFINITIONS,
+    KNOWLEDGE_RETRIEVAL_HANDLERS,
+)
+from .knowledge.tools.retrieval import configure as configure_retrieval
+from .knowledge.tools.management import (
+    KNOWLEDGE_MANAGEMENT_TOOL_DEFINITIONS,
+    KNOWLEDGE_MANAGEMENT_HANDLERS,
+)
+from .knowledge.tools.management import configure as configure_management
+
 # Get settings
 _settings = get_settings()
 
@@ -329,6 +346,10 @@ def _build_registry():
         (USERS_TOOL_DEFINITIONS, USERS_HANDLERS),
         (REFERENCE_DATA_TOOL_DEFINITIONS, REFERENCE_DATA_HANDLERS),
         (ONSIGHT_TOOL_DEFINITIONS, ONSIGHT_HANDLERS),
+        # Knowledge Layer tools
+        (KNOWLEDGE_SEARCH_TOOL_DEFINITIONS, KNOWLEDGE_SEARCH_HANDLERS),
+        (KNOWLEDGE_RETRIEVAL_TOOL_DEFINITIONS, KNOWLEDGE_RETRIEVAL_HANDLERS),
+        (KNOWLEDGE_MANAGEMENT_TOOL_DEFINITIONS, KNOWLEDGE_MANAGEMENT_HANDLERS),
     ]:
         for name, defn_func in defn_dict.items():
             tool = defn_func()
@@ -350,6 +371,18 @@ class FortiMonitorMCPServer:
         self.server = Server(_settings.mcp_server_name)
         self.client: FortiMonitorClient = None
         self._setup_handlers()
+
+        # Configure Knowledge Layer tools
+        kb_path = str(_settings.knowledge_base_path)
+        kb_model = _settings.knowledge_embedding_model
+        kb_sources = str(_settings.knowledge_sources_file)
+        configure_search(db_path=kb_path, embedding_model=kb_model)
+        configure_retrieval(db_path=kb_path)
+        configure_management(
+            db_path=kb_path,
+            sources_file=kb_sources,
+            embedding_model=kb_model,
+        )
 
         logger.info(
             f"Initialized {_settings.mcp_server_name} v{_settings.mcp_server_version} "
