@@ -39,6 +39,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache
+          sudo docker system prune -af
+          df -h
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -51,8 +57,6 @@ jobs:
           context: .
           load: true
           tags: ${{ env.IMAGE_NAME }}:test
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: Run container tests
         run: |
