@@ -29,6 +29,7 @@ venv/
 env/
 ENV/
 .venv/
+.venv312/
 .env.local
 
 # IDE and editors
@@ -86,8 +87,8 @@ check_*.py
 debug_*.py
 verify_*.py
 
-# Development scripts
-scripts/
+# Development scripts (keep scripts/ — needed for Knowledge Layer ingestion)
+# scripts/
 
 # Docker files (no need to include in image)
 Dockerfile*
@@ -100,10 +101,38 @@ docker-compose*.yml
 .travis.yml
 Jenkinsfile
 
+# Agent configuration (internal development)
+agents/
+
+# Knowledge layer data (rebuilt at runtime)
+data/vectordb/
+
+# AI index files
+*_ai_index.json
+
+# Pip artifacts
+=*
+
+# Lock files
+uv.lock
+
+# Claude Code configuration
+.claude/
+CLAUDE.md
+
+# TODO tracking
+TODO.md
+
+# Egg info
+*.egg-info/
+fortimonitor_mcp_server.egg-info/
+
 # Misc
 *.bak
 *.tmp
 *.temp
+*.cache
+nul
 Makefile
 LICENSE
 CHANGELOG*
