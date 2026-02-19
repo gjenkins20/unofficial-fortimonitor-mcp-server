@@ -61,7 +61,19 @@
       "Bash(docker push:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd security fixes and sharing documentation for Docker deployment\n\n- Dockerfile: Upgrade pip, wheel, setuptools to fix CVE-2025-8869,\n  CVE-2026-24049, CVE-2026-23949 \\(HIGH severity vulnerabilities\\)\n- Add DOCKER_QUICKSTART.md for colleague onboarding via ghcr.io\n- Add docker-compose.share.yml for simplified container deployment\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git push:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(git worktree:*)",
+      "Bash(source:*)",
+      "Bash(uv:*)",
+      "Bash(pytest:*)",
+      "Bash(FORTIMONITOR_API_KEY=test-key python -m pytest:*)",
+      "Bash(.venv/bin/python:*)",
+      "Bash(.venv/bin/pip:*)",
+      "Bash(.venv/bin/pytest:*)",
+      "Bash(FORTIMONITOR_API_KEY=test-key .venv/bin/python -m pytest:*)",
+      "Bash(FORTIMONITOR_API_KEY=test-key .venv/bin/python:*)"
     ]
   }
 }

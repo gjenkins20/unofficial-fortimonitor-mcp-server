@@ -42,3 +42,12 @@ nul
 
 # Pip artifacts
 =*
+
+# Agent configuration (internal development)
+agents/
+
+# Knowledge layer data
+data/vectordb/
+
+# Virtual environment (macOS)
+.venv/

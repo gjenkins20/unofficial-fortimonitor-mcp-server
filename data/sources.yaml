@@ -1,0 +1,31 @@
+# =============================================================================
+# FortiMonitor Knowledge Base — Source Definitions
+# =============================================================================
+#
+# This file defines the documentation sources to ingest into the knowledge base.
+# Run ingestion with: python scripts/ingest.py
+#
+# =============================================================================
+
+# PDF documentation sources
+# Each entry needs either a 'url' (downloaded automatically) or 'path' (local file)
+pdf_sources:
+  - name: "FortiMonitor User Guide"
+    url: "https://docs.fortinet.com/document/fortimonitor/latest/user-guide/fortimonitor-user-guide.pdf"
+    description: "Primary user documentation for FortiMonitor"
+
+  - name: "FortiMonitor Admin Guide"
+    url: "https://docs.fortinet.com/document/fortimonitor/latest/admin-guide/fortimonitor-admin-guide.pdf"
+    description: "Administrator guide for FortiMonitor"
+
+  - name: "FortiMonitor Release Notes"
+    url: "https://docs.fortinet.com/document/fortimonitor/latest/release-notes/fortimonitor-release-notes.pdf"
+    description: "Release notes and changelog"
+
+# Web documentation sources
+# Each entry needs a 'url' (seed URL for crawling) and optional 'depth' limit
+web_sources:
+  - name: "FortiMonitor Web Docs"
+    url: "https://docs.fortinet.com/product/fortimonitor"
+    depth: 3
+    description: "FortiMonitor product documentation portal"
