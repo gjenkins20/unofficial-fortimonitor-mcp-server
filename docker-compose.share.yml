@@ -46,6 +46,14 @@ services:
     security_opt:
       - no-new-privileges:true
 
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "from src.config import get_settings; s = get_settings(); print('OK')"]
+      interval: 60s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+
     # Keep container alive for MCP server invocation
     stdin_open: true
     tty: false

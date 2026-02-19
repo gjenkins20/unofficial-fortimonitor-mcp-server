@@ -68,6 +68,10 @@ COPY --chown=mcpuser:mcpuser setup.py ./
 COPY --chown=mcpuser:mcpuser data/sources.yaml ./data/
 COPY --chown=mcpuser:mcpuser scripts/ ./scripts/
 
+# Copy local documentation for Knowledge Layer ingestion
+COPY --chown=mcpuser:mcpuser FORTIMONITOR_API_DOCS.md DOCKER_DEPLOYMENT.md DOCKER_QUICKSTART.md ./
+COPY --chown=mcpuser:mcpuser docs/ ./docs/
+
 # Copy pre-downloaded model weights from builder
 COPY --from=builder /root/.cache/huggingface /home/mcpuser/.cache/huggingface
 
