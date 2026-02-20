@@ -20,7 +20,7 @@ structlog>=23.2.0
 pymupdf4llm>=0.0.17
 PyMuPDF>=1.24.0
 sentence-transformers>=3.0.0
-lancedb>=0.6.0
+lancedb>=0.6.0,<0.26
 pyyaml>=6.0
 
 # Knowledge Layer - Web Crawling (optional)
