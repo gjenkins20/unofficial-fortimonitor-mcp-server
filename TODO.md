@@ -19,6 +19,20 @@ Project tasks and planned work for FortiMonitor MCP Server.
 
 ---
 
+## Up Next — Knowledge Layer Quality (v2.1)
+
+- [ ] **Develop a plan to improve knowledge layer answer quality**
+  - Current knowledge tools return results, but answers lack the depth and polish expected of a knowledge worker
+  - Audit the full retrieval pipeline: chunking strategy, embedding model, search/ranking, and response synthesis
+  - Evaluate whether chunk sizes, overlap, and metadata are optimized for FortiMonitor content
+  - Assess embedding model quality (sentence-transformers) vs. alternatives (Ollama, API-based)
+  - Investigate adding re-ranking (cross-encoder or LLM-based) to improve result relevance
+  - Consider prompt engineering or response formatting improvements in tool handlers
+  - Benchmark current retrieval quality with sample queries and establish a baseline
+  - Produce a concrete implementation plan with prioritized improvements
+
+---
+
 ## Future Considerations (v2.x+)
 
 These are planned enhancements beyond the initial v2.0 release, from Section 13 of the Implementation Plan.
@@ -52,4 +66,4 @@ These are planned enhancements beyond the initial v2.0 release, from Section 13 
 
 ---
 
-*Last updated: 2026-02-19*
+*Last updated: 2026-02-20*
