@@ -489,6 +489,35 @@ class SchemaStore:
 
         return "\n".join(lines)
 
+    def get_element_position(
+        self,
+        url: Optional[str] = None,
+        page_id: Optional[str] = None,
+        element_id: Optional[str] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Get an element's position {x, y, width, height} or None.
+
+        Searches all sections on the page for the given element_id.
+        Returns None if the page/element isn't found or position is null.
+        """
+        if not element_id:
+            return None
+
+        resolved_url = self._resolve_url(url=url, page_id=page_id)
+        if not resolved_url:
+            return None
+
+        page = self._data["pages"][resolved_url]
+        for section in page.get("sections", []):
+            for elem in section.get("elements", []):
+                if elem.get("element_id") == element_id:
+                    pos = elem.get("position")
+                    if pos and isinstance(pos, dict):
+                        return pos
+                    return None
+
+        return None
+
     def get_forms(
         self,
         url: Optional[str] = None,
