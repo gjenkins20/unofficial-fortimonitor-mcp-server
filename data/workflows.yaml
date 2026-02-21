@@ -1,0 +1,87 @@
+# FortiMonitor WebGUI Workflow Definitions
+# Each workflow is a step-by-step task guide referencing crawled pages.
+
+workflows:
+
+  schedule-maintenance:
+    title: "Schedule a Maintenance Window"
+    description: "Suppress monitoring alerts during planned server maintenance."
+    tags: [maintenance, server, alerts, scheduling]
+    steps:
+      - title: "Open the All Instances page"
+        page_id: "report-ListServers"
+        instruction: >
+          Navigate to Monitoring > All Instances to find the server
+          you want to schedule maintenance for. Use the Filter field
+          to search by server name.
+        highlight_element: "elem-13"
+        highlight_form: "form-0"
+      - title: "Open the server's maintenance tab"
+        page_id: "report-Instance-41913280-maintenance"
+        instruction: >
+          Click on the server name to open its detail page, then click
+          the 'Maintenance' tab in the left sidebar navigation.
+        highlight_element: "elem-14"
+        highlight_form: null
+      - title: "View active and upcoming maintenance"
+        page_id: "config-ListActiveUpcomingMaintenanceSchedules"
+        instruction: >
+          Alternatively, go to Configuration > Maintenance Schedules >
+          Active and Upcoming to see all scheduled maintenance windows.
+          From here you can also create new schedules.
+        highlight_element: "elem-13"
+        highlight_form: null
+
+  investigate-incident:
+    title: "Investigate an Active Incident"
+    description: "Review incident details, timeline, and affected server from the WebGUI."
+    tags: [incident, outage, troubleshooting, investigation]
+    steps:
+      - title: "Open the Incident Hub"
+        page_id: "incidents"
+        instruction: >
+          Navigate to the Incident Hub from the left sidebar. This page
+          shows all active and recent incidents. Use the filters to narrow
+          by severity, server, or time range.
+        highlight_element: "elem-14"
+        highlight_form: "form-0"
+      - title: "Open the incident detail page"
+        page_id: "outage-IncidentDetails"
+        instruction: >
+          Click on an incident row to open its detail page. This shows
+          the incident timeline, affected server, triggering metric,
+          and any countermeasure output. You can acknowledge the incident,
+          add notes, or escalate from this page.
+        highlight_element: "elem-19"
+        highlight_form: null
+      - title: "Review the affected server"
+        page_id: "report-Appliance-16966-monitoring"
+        instruction: >
+          Click the server name link in the incident details to navigate
+          to the server's monitoring page. Review current metrics, check
+          history, and verify whether the issue is ongoing.
+        highlight_element: "add-monitoring"
+        highlight_form: null
+
+  manage-alert-timelines:
+    title: "Configure Alert Timelines (Notification Schedules)"
+    description: "Set up or modify how and when alerts are sent to contacts."
+    tags: [notifications, alerts, contacts, scheduling]
+    steps:
+      - title: "Open the Alert Timelines list"
+        page_id: "config-notification-ListNotificationSchedules"
+        instruction: >
+          Navigate to Configuration > Alert Timelines. This page lists all
+          notification schedules that control when and how contacts are
+          alerted about incidents.
+        highlight_element: "elem-140"
+        highlight_form: null
+      - title: "Edit or create an alert timeline"
+        page_id: "config-notification-EditNotificationSchedule"
+        instruction: >
+          Click on an existing alert timeline to edit it, or click
+          'Create Alert Timeline' to create a new one. The timeline editor
+          lets you define escalation steps, delays, and which contact
+          groups receive alerts at each stage.
+        highlight_element: "elem-15"
+        highlight_form: null

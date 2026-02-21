@@ -397,10 +397,12 @@ class FortiMonitorMCPServer:
         # Configure WebGUI Knowledge Layer
         webgui_schema = Path(_settings.webgui_schema_file)
         webgui_screenshots = Path(_settings.webgui_screenshots_dir)
+        webgui_workflows = Path(_settings.webgui_workflows_file)
         if webgui_schema.exists():
             configure_webgui(
                 schema_file=webgui_schema,
                 screenshots_dir=webgui_screenshots,
+                workflows_file=webgui_workflows,
             )
         else:
             logger.warning(

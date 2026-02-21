@@ -263,17 +263,17 @@ def store(schema_file, screenshots_dir):
 class TestWebguiToolDefinitions:
     """Verify tool definitions and handler registration."""
 
-    def test_all_seven_tools_defined(self):
-        """WEBGUI_TOOL_DEFINITIONS has exactly 7 entries."""
+    def test_all_ten_tools_defined(self):
+        """WEBGUI_TOOL_DEFINITIONS has exactly 10 entries."""
         from src.webgui.tools import WEBGUI_TOOL_DEFINITIONS
 
-        assert len(WEBGUI_TOOL_DEFINITIONS) == 7
+        assert len(WEBGUI_TOOL_DEFINITIONS) == 10
 
-    def test_all_seven_handlers_defined(self):
-        """WEBGUI_HANDLERS has exactly 7 entries."""
+    def test_all_ten_handlers_defined(self):
+        """WEBGUI_HANDLERS has exactly 10 entries."""
         from src.webgui.tools import WEBGUI_HANDLERS
 
-        assert len(WEBGUI_HANDLERS) == 7
+        assert len(WEBGUI_HANDLERS) == 10
 
     def test_definition_handler_keys_match(self):
         """Definition dict keys match handler dict keys."""
@@ -282,7 +282,7 @@ class TestWebguiToolDefinitions:
         assert set(WEBGUI_TOOL_DEFINITIONS.keys()) == set(WEBGUI_HANDLERS.keys())
 
     def test_expected_tool_names(self):
-        """All 7 expected tool names are present."""
+        """All 10 expected tool names are present."""
         from src.webgui.tools import WEBGUI_TOOL_DEFINITIONS
 
         expected = {
@@ -293,6 +293,9 @@ class TestWebguiToolDefinitions:
             "ui_get_navigation",
             "ui_describe_page",
             "ui_get_form",
+            "ui_list_walkthroughs",
+            "ui_get_walkthrough",
+            "ui_crop_screenshot",
         }
         assert set(WEBGUI_TOOL_DEFINITIONS.keys()) == expected
 
