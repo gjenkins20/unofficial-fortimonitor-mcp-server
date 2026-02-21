@@ -14,14 +14,14 @@ workflows:
           Navigate to Monitoring > All Instances to find the server
           you want to schedule maintenance for. Use the Filter field
           to search by server name.
-        highlight_element: null
+        highlight_element: "elem-13"
         highlight_form: "form-0"
       - title: "Open the server's maintenance tab"
         page_id: "report-Instance-41913280-maintenance"
         instruction: >
           Click on the server name to open its detail page, then click
           the 'Maintenance' tab in the left sidebar navigation.
-        highlight_element: null
+        highlight_element: "elem-14"
         highlight_form: null
       - title: "View active and upcoming maintenance"
         page_id: "config-ListActiveUpcomingMaintenanceSchedules"
@@ -29,7 +29,7 @@ workflows:
           Alternatively, go to Configuration > Maintenance Schedules >
           Active and Upcoming to see all scheduled maintenance windows.
           From here you can also create new schedules.
-        highlight_element: null
+        highlight_element: "elem-13"
         highlight_form: null
 
   investigate-incident:
@@ -43,7 +43,7 @@ workflows:
           Navigate to the Incident Hub from the left sidebar. This page
           shows all active and recent incidents. Use the filters to narrow
           by severity, server, or time range.
-        highlight_element: null
+        highlight_element: "elem-14"
         highlight_form: "form-0"
       - title: "Open the incident detail page"
         page_id: "outage-IncidentDetails"
@@ -52,7 +52,7 @@ workflows:
           the incident timeline, affected server, triggering metric,
           and any countermeasure output. You can acknowledge the incident,
           add notes, or escalate from this page.
-        highlight_element: null
+        highlight_element: "elem-19"
         highlight_form: null
       - title: "Review the affected server"
         page_id: "report-Appliance-16966-monitoring"
@@ -60,7 +60,7 @@ workflows:
           Click the server name link in the incident details to navigate
           to the server's monitoring page. Review current metrics, check
           history, and verify whether the issue is ongoing.
-        highlight_element: null
+        highlight_element: "add-monitoring"
         highlight_form: null
 
   manage-alert-timelines:
@@ -74,7 +74,7 @@ workflows:
           Navigate to Configuration > Alert Timelines. This page lists all
           notification schedules that control when and how contacts are
           alerted about incidents.
-        highlight_element: null
+        highlight_element: "elem-140"
         highlight_form: null
       - title: "Edit or create an alert timeline"
         page_id: "config-notification-EditNotificationSchedule"
@@ -83,5 +83,5 @@ workflows:
           'Create Alert Timeline' to create a new one. The timeline editor
           lets you define escalation steps, delays, and which contact
           groups receive alerts at each stage.
-        highlight_element: null
+        highlight_element: "elem-15"
         highlight_form: null
