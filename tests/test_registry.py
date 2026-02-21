@@ -52,10 +52,10 @@ class TestRegistryIntegrity:
     """Verify the tool registry loads correctly."""
 
     def test_total_tool_count(self, registry):
-        """All 241 tools are registered."""
+        """All 248 tools are registered (241 original + 7 WebGUI)."""
         defns, handlers = registry
-        assert len(defns) >= 241, (
-            f"Expected at least 241 tools, got {len(defns)}"
+        assert len(defns) >= 248, (
+            f"Expected at least 248 tools, got {len(defns)}"
         )
 
     def test_definition_handler_count_match(self, registry):
@@ -193,6 +193,7 @@ class TestDictModuleExportConsistency:
         ("src.tools.onsight", "ONSIGHT_TOOL_DEFINITIONS", "ONSIGHT_HANDLERS"),
         ("src.tools.fabric", "FABRIC_TOOL_DEFINITIONS", "FABRIC_HANDLERS"),
         ("src.tools.countermeasures", "COUNTERMEASURES_TOOL_DEFINITIONS", "COUNTERMEASURES_HANDLERS"),
+        ("src.webgui.tools", "WEBGUI_TOOL_DEFINITIONS", "WEBGUI_HANDLERS"),
     ]
 
     @pytest.mark.parametrize("module_path,defn_name,handler_name", DICT_MODULES)
