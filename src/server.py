@@ -238,13 +238,6 @@ from .knowledge.tools.management import (
 )
 from .knowledge.tools.management import configure as configure_management
 
-# WebGUI Knowledge Layer tools
-from .webgui.tools import (
-    WEBGUI_TOOL_DEFINITIONS,
-    WEBGUI_HANDLERS,
-)
-from .webgui.tools import configure as configure_webgui
-
 # Get settings
 _settings = get_settings()
 
@@ -358,8 +351,6 @@ def _build_registry():
         (KNOWLEDGE_SEARCH_TOOL_DEFINITIONS, KNOWLEDGE_SEARCH_HANDLERS),
         (KNOWLEDGE_RETRIEVAL_TOOL_DEFINITIONS, KNOWLEDGE_RETRIEVAL_HANDLERS),
         (KNOWLEDGE_MANAGEMENT_TOOL_DEFINITIONS, KNOWLEDGE_MANAGEMENT_HANDLERS),
-        # WebGUI Knowledge Layer tools
-        (WEBGUI_TOOL_DEFINITIONS, WEBGUI_HANDLERS),
     ]:
         for name, defn_func in defn_dict.items():
             tool = defn_func()
@@ -393,23 +384,6 @@ class FortiMonitorMCPServer:
             sources_file=kb_sources,
             embedding_model=kb_model,
         )
-
-        # Configure WebGUI Knowledge Layer
-        webgui_schema = Path(_settings.webgui_schema_file)
-        webgui_screenshots = Path(_settings.webgui_screenshots_dir)
-        webgui_workflows = Path(_settings.webgui_workflows_file)
-        if webgui_schema.exists():
-            configure_webgui(
-                schema_file=webgui_schema,
-                screenshots_dir=webgui_screenshots,
-                workflows_file=webgui_workflows,
-            )
-        else:
-            logger.warning(
-                "WebGUI schema file not found at %s — WebGUI tools will "
-                "return errors until the schema is available.",
-                webgui_schema,
-            )
 
         logger.info(
             f"Initialized {_settings.mcp_server_name} v{_settings.mcp_server_version} "
