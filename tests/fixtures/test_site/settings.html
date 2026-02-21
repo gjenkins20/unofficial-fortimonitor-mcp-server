@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head><title>Settings</title></head>
+<body>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li><a href="/">Home</a></li>
+        <li>Settings</li>
+    </ol>
+</nav>
+<h1>Settings</h1>
+<form id="general-settings">
+    <h2>General Settings</h2>
+    <label for="site-name">Site Name:</label>
+    <input type="text" id="site-name" name="site_name" placeholder="Enter site name" required>
+    <label for="timezone">Timezone:</label>
+    <select id="timezone" name="timezone">
+        <option>UTC</option>
+        <option>US/Eastern</option>
+        <option>US/Pacific</option>
+    </select>
+    <button type="submit">Save Settings</button>
+</form>
+<div class="modal" id="confirm-save" role="dialog" style="display: none;">
+    <h3 class="modal-title">Confirm Changes</h3>
+    <button id="confirm-btn">Confirm</button>
+    <button id="cancel-btn">Cancel</button>
+</div>
+</body>
+</html>

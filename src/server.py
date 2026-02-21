@@ -237,6 +237,20 @@ from .knowledge.tools.management import (
 )
 from .knowledge.tools.management import configure as configure_management
 
+# WebGUI Crawler tools
+from .webgui.tools.crawl_tools import (
+    WEBGUI_CRAWL_TOOL_DEFINITIONS,
+    WEBGUI_CRAWL_HANDLERS,
+)
+from .webgui.tools.schema_tools import (
+    WEBGUI_SCHEMA_TOOL_DEFINITIONS,
+    WEBGUI_SCHEMA_HANDLERS,
+)
+from .webgui.tools.walkthrough_tools import (
+    WEBGUI_WALKTHROUGH_TOOL_DEFINITIONS,
+    WEBGUI_WALKTHROUGH_HANDLERS,
+)
+
 # Get settings
 _settings = get_settings()
 
@@ -350,6 +364,10 @@ def _build_registry():
         (KNOWLEDGE_SEARCH_TOOL_DEFINITIONS, KNOWLEDGE_SEARCH_HANDLERS),
         (KNOWLEDGE_RETRIEVAL_TOOL_DEFINITIONS, KNOWLEDGE_RETRIEVAL_HANDLERS),
         (KNOWLEDGE_MANAGEMENT_TOOL_DEFINITIONS, KNOWLEDGE_MANAGEMENT_HANDLERS),
+        # WebGUI Crawler tools
+        (WEBGUI_CRAWL_TOOL_DEFINITIONS, WEBGUI_CRAWL_HANDLERS),
+        (WEBGUI_SCHEMA_TOOL_DEFINITIONS, WEBGUI_SCHEMA_HANDLERS),
+        (WEBGUI_WALKTHROUGH_TOOL_DEFINITIONS, WEBGUI_WALKTHROUGH_HANDLERS),
     ]:
         for name, defn_func in defn_dict.items():
             tool = defn_func()

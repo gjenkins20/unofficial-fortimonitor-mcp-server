@@ -77,6 +77,20 @@ class Settings(BaseSettings):
         description="Path to the YAML file defining documentation sources",
     )
 
+    # WebGUI Crawler Configuration
+    webgui_data_dir: Path = Field(
+        default=Path("data/webgui"),
+        description="Base directory for WebGUI crawler data (schemas, screenshots, state)",
+    )
+    webgui_browser_headless: bool = Field(
+        default=True,
+        description="Run Playwright browser in headless mode (default: True)",
+    )
+    webgui_default_timeout: int = Field(
+        default=30000,
+        description="Default timeout in milliseconds for page loads and element waits",
+    )
+
     @property
     def api_base_url(self) -> str:
         """Get API base URL as string."""
