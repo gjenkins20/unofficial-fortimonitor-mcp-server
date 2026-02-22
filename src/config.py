@@ -77,20 +77,6 @@ class Settings(BaseSettings):
         description="Path to the YAML file defining documentation sources",
     )
 
-    # WebGUI Knowledge Layer Configuration
-    webgui_schema_file: Path = Field(
-        default=Path("data/schemas/crawl-31e23c1bfdd1.json"),
-        description="Path to the WebGUI crawl schema JSON file",
-    )
-    webgui_screenshots_dir: Path = Field(
-        default=Path("data/crawl-31e23c1bfdd1"),
-        description="Directory containing WebGUI page screenshots",
-    )
-    webgui_workflows_file: Path = Field(
-        default=Path("data/workflows.yaml"),
-        description="Path to the WebGUI workflow definitions YAML file",
-    )
-
     @property
     def api_base_url(self) -> str:
         """Get API base URL as string."""
