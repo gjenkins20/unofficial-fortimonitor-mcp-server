@@ -23,6 +23,21 @@ Project tasks and planned work for FortiMonitor MCP Server.
   - Covers 196 crawled pages, 34,867 elements, 737 forms, 1,366 modals
   - Total tool count: 241 → 248
 
+- [x] Add WebGUI walkthrough tools & screenshot cropping — 3 tools, 40 tests
+  - WorkflowStore with YAML-defined step-by-step task guides enriched from SchemaStore
+  - Tools: ui_list_walkthroughs, ui_get_walkthrough, ui_crop_screenshot
+  - 3 walkthroughs: schedule maintenance, investigate incident, configure alert timelines
+  - All steps enriched with real page titles, URLs, screenshots, and highlight_element positions
+  - Validated against real crawl data (scripts/validate_walkthroughs.py) — all checks pass
+  - Total tool count: 248 → 251, total WebGUI tests: 92
+
+- [x] Extract WebGUI tools into standalone MCP server
+  - New `fortimonitor-webgui` entry point (`src/webgui/server.py`) with all 10 WebGUI tools
+  - Config via env vars (`WEBGUI_SCHEMA_FILE`, `WEBGUI_SCREENSHOTS_DIR`, `WEBGUI_WORKFLOWS_FILE`)
+  - Removed WebGUI imports, registry entry, and config fields from main server
+  - Main server: 249 tools (no WebGUI), WebGUI server: 10 tools
+  - 7 new smoke tests, 99 total WebGUI tests passing
+
 ---
 
 ## Up Next — Knowledge Layer Quality (v2.1)
@@ -70,6 +85,8 @@ These are planned enhancements beyond the initial v2.0 release, from Section 13 
 - [x] Documentation (User Guide, Developer Guide, Docker Quickstart)
 - [x] Security fixes (CVE-2025-8869, CVE-2026-24049, CVE-2026-23949)
 - [x] WebGUI static knowledge layer — 7 MCP tools (248 total)
+- [x] WebGUI walkthrough tools & screenshot cropping — 3 MCP tools (251 total)
+- [x] Extract WebGUI into standalone MCP server (249 + 10 tools)
 
 ---
 
