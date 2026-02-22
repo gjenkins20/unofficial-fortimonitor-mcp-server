@@ -2,7 +2,7 @@
 
 ## What This Project Is
 
-FortiMonitor MCP Server — a Model Context Protocol server that exposes 241 tools for the FortiMonitor/Panopta v2 monitoring API. It connects Claude Desktop or Claude Code to a live FortiMonitor instance.
+FortiMonitor MCP Server — a Model Context Protocol server that exposes 249 tools for the FortiMonitor/Panopta v2 monitoring API. It connects Claude Desktop or Claude Code to a live FortiMonitor instance. A separate standalone server (`fortimonitor-webgui`) provides 10 additional WebGUI knowledge tools.
 
 ## Key Files
 
