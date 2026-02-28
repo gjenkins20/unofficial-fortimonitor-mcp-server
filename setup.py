@@ -10,11 +10,10 @@ with open("requirements.txt") as f:
     ]
 
 setup(
-    name="fortimonitor-mcp-server",
+    name="unofficial-fortimonitor-mcp-server",
     version="0.1.0",
-    description="MCP server for FortiMonitor/Panopta v2 API integration",
-    author="Your Name",
-    author_email="your.email@example.com",
+    description="Unofficial community MCP server for FortiMonitor/Panopta v2 API integration",
+    author="Gregori Jenkins",
     packages=find_packages(),
     package_dir={"": "."},
     python_requires=">=3.9",

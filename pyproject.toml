@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "fortimonitor-mcp-server"
+name = "unofficial-fortimonitor-mcp-server"
 version = "0.1.0"
-description = "MCP server for FortiMonitor/Panopta v2 API integration"
+description = "Unofficial community MCP server for FortiMonitor/Panopta v2 API integration"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Gregori Jenkins"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",

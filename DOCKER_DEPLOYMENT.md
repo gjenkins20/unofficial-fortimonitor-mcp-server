@@ -18,7 +18,7 @@ docker run -d \
 Or with Docker Compose:
 
 ```bash
-curl -O https://raw.githubusercontent.com/gjenkins20/fortimonitor-mcp-server/main/docker-compose.share.yml
+curl -O https://raw.githubusercontent.com/gjenkins20/unofficial-fortimonitor-mcp-server/main/docker-compose.share.yml
 echo "FORTIMONITOR_API_KEY=your-api-key-here" > .env
 docker-compose -f docker-compose.share.yml up -d
 ```
@@ -144,7 +144,7 @@ docker inspect --format='{{.State.Health.Status}}' fortimonitor-mcp
 
 ## Source Code
 
-[GitHub: gjenkins20/fortimonitor-mcp-server](https://github.com/gjenkins20/fortimonitor-mcp-server)
+[GitHub: gjenkins20/unofficial-fortimonitor-mcp-server](https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server)
 
 ## License
 

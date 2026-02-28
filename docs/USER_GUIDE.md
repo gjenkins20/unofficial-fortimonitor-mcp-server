@@ -28,8 +28,8 @@ Docker provides isolated, reproducible deployments with no dependency conflicts.
 **Step 1: Clone the repository**
 
 ```bash
-git clone <repository-url> fortimonitor-mcp-server
-cd fortimonitor-mcp-server
+git clone <repository-url> unofficial-fortimonitor-mcp-server
+cd unofficial-fortimonitor-mcp-server
 ```
 
 **Step 2: Create environment file**
@@ -85,8 +85,8 @@ In your Claude Desktop configuration (typically `claude_desktop_config.json`), a
 **Step 1: Clone and enter the repository**
 
 ```bash
-git clone <repository-url> fortimonitor-mcp-server
-cd fortimonitor-mcp-server
+git clone <repository-url> unofficial-fortimonitor-mcp-server
+cd unofficial-fortimonitor-mcp-server
 ```
 
 **Step 2: Create and activate a virtual environment**
@@ -133,7 +133,7 @@ In your Claude Desktop configuration, add:
     "fortimonitor": {
       "command": "python",
       "args": ["-m", "src.server"],
-      "cwd": "/path/to/fortimonitor-mcp-server"
+      "cwd": "/path/to/unofficial-fortimonitor-mcp-server"
     }
   }
 }

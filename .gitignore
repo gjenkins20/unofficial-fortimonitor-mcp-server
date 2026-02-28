@@ -55,3 +55,11 @@ data/vectordb/
 
 # macOS
 .DS_Store
+
+# Claude Code
+.claude/
+CLAUDE.md
+
+# Crawl/schema data
+data/crawl-*/
+data/schemas/

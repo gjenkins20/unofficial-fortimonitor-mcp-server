@@ -1,4 +1,6 @@
-# FortiMonitor MCP Server
+# Unofficial FortiMonitor MCP Server
+
+> **Disclaimer:** This is an unofficial community project. It is not affiliated with, endorsed by, or supported by Fortinet, Inc. or the FortiMonitor/Panopta team. "FortiMonitor" and "Fortinet" are trademarks of Fortinet, Inc. Use at your own risk.
 
 Model Context Protocol (MCP) server for FortiMonitor/Panopta v2 API integration with Claude AI.
 
@@ -151,7 +153,7 @@ Then add to your Claude Desktop config:
     "fortimonitor": {
       "command": "python",
       "args": ["-m", "src.server"],
-      "cwd": "/path/to/fortimonitor-mcp-server",
+      "cwd": "/path/to/unofficial-fortimonitor-mcp-server",
       "env": {
         "FORTIMONITOR_BASE_URL": "https://api2.panopta.com/v2",
         "FORTIMONITOR_API_KEY": "your_key"
@@ -205,9 +207,8 @@ flake8 src/ tests/
 ## Project Structure
 
 ```
-fortimonitor-mcp-server/
+unofficial-fortimonitor-mcp-server/
 ├── README.md
-├── REMAINING_WORK_INSTRUCTIONS.md  # Implementation status & coding reference
 ├── FORTIMONITOR_API_DOCS.md        # FortiMonitor API documentation
 ├── Dockerfile                      # Container definition
 ├── docker-compose.yml              # Docker Compose config
@@ -309,6 +310,12 @@ fortimonitor-mcp-server/
 - Restart Claude Desktop completely
 - Check server logs for startup errors
 
+## About the Developer
+
+Built by **Gregori Jenkins** — originally from Chicago, a humble student of Computer Science, and a proud cat dad.
+
+[Connect on LinkedIn](https://www.linkedin.com/in/gregorijenkins)
+
 ## License
 
-MIT License
+MIT License — see [LICENSE](LICENSE) for details.

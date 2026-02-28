@@ -40,6 +40,46 @@ Project tasks and planned work for FortiMonitor MCP Server.
 
 ---
 
+## Go Public — Community Edition Release
+
+- [x] **Rotate FortiMonitor API key**
+  - Key `798413e3-ac02-...` was in git history (deleted `debug_api.py`, `verify_server_status.py`)
+  - **User must rotate in FortiMonitor dashboard** — consider it compromised
+
+- [x] **Scrub git history of secrets**
+  - Used `git-filter-repo` to remove `debug_api.py` and `verify_server_status.py` from all history
+  - Force-pushed all branches (`main`, `master`, `v2.0-knowledge-layer`) and tags (`v2.0.0`)
+  - Verified: `git log --all -p -S "798413e3"` returns nothing
+
+- [x] **Remove/exclude internal files from tracking**
+  - Removed `CLAUDE.md`, `.claude/settings.local.json`, `REMAINING_WORK_INSTRUCTIONS.md` from git tracking
+  - Added `.claude/`, `CLAUDE.md`, `data/crawl-*/`, `data/schemas/` to `.gitignore`
+
+- [x] **Rename repo to `unofficial-fortimonitor-mcp-server`**
+  - Renamed on GitHub via `gh repo rename`
+  - Updated all references in README, docs, Docker configs, pyproject.toml, setup.py
+  - Added disclaimer to README
+
+- [x] **Add open-source license**
+  - MIT License added as `LICENSE` file
+
+- [x] **Update README for public audience**
+  - Added "Unofficial" branding and Fortinet disclaimer
+  - Added "About the Developer" section
+  - Updated repo path references throughout
+
+- [ ] **Make GitHub repo public**
+  - Final security review pass
+  - `gh repo edit --visibility public`
+
+- [ ] **Publish to Docker Hub as community edition**
+  - Create Docker Hub repo (e.g., `gjenkins20/unofficial-fortimonitor-mcp-server`)
+  - Update CI/CD workflow to push to Docker Hub (in addition to or instead of ghcr.io)
+  - Tag as `community` or `unofficial` to set expectations
+  - Update Docker Quickstart docs with new image name
+
+---
+
 ## Up Next — Knowledge Layer Quality (v2.1)
 
 - [ ] **Develop a plan to improve knowledge layer answer quality**
@@ -90,4 +130,4 @@ These are planned enhancements beyond the initial v2.0 release, from Section 13 
 
 ---
 
-*Last updated: 2026-02-21*
+*Last updated: 2026-02-27*

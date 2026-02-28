@@ -131,13 +131,13 @@ cd C:\Projects
 2. Clone the repository:
 
 ```powershell
-git clone https://github.com/gjenkins20/fortimonitor-mcp-server.git
+git clone https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server.git
 ```
 
 3. Navigate into the project directory:
 
 ```powershell
-cd fortimonitor-mcp-server
+cd unofficial-fortimonitor-mcp-server
 ```
 
 4. Verify the clone:
@@ -292,9 +292,9 @@ Edit the configuration file and add the `fortimonitor` entry under `mcpServers`:
 {
   "mcpServers": {
     "fortimonitor": {
-      "command": "C:\\Projects\\fortimonitor-mcp-server\\venv\\Scripts\\python.exe",
+      "command": "C:\\Projects\\unofficial-fortimonitor-mcp-server\\venv\\Scripts\\python.exe",
       "args": ["-m", "src.server"],
-      "cwd": "C:\\Projects\\fortimonitor-mcp-server",
+      "cwd": "C:\\Projects\\unofficial-fortimonitor-mcp-server",
       "env": {
         "FORTIMONITOR_API_KEY": "your_actual_api_key_here",
         "FORTIMONITOR_BASE_URL": "https://api2.panopta.com/v2"
@@ -304,7 +304,7 @@ Edit the configuration file and add the `fortimonitor` entry under `mcpServers`:
 }
 ```
 
-> **Important:** Use the full path to the `python.exe` inside the virtual environment. Adjust `C:\Projects\fortimonitor-mcp-server` if you cloned to a different location.
+> **Important:** Use the full path to the `python.exe` inside the virtual environment. Adjust `C:\Projects\unofficial-fortimonitor-mcp-server` if you cloned to a different location.
 
 ### Alternative: Use environment variables from .env file
 
@@ -321,9 +321,9 @@ Then simplify the config to:
 {
   "mcpServers": {
     "fortimonitor": {
-      "command": "C:\\Projects\\fortimonitor-mcp-server\\venv\\Scripts\\python.exe",
+      "command": "C:\\Projects\\unofficial-fortimonitor-mcp-server\\venv\\Scripts\\python.exe",
       "args": ["-m", "src.server"],
-      "cwd": "C:\\Projects\\fortimonitor-mcp-server"
+      "cwd": "C:\\Projects\\unofficial-fortimonitor-mcp-server"
     }
   }
 }
@@ -344,7 +344,7 @@ The MCP server runs automatically when Claude Code invokes it via the configurat
 If you need to run the server manually for debugging:
 
 ```powershell
-cd C:\Projects\fortimonitor-mcp-server
+cd C:\Projects\unofficial-fortimonitor-mcp-server
 .\venv\Scripts\Activate.ps1
 python -m src.server
 ```
@@ -384,7 +384,7 @@ Install-WindowsFeature -Name Containers
 ### Build and run with Docker Compose
 
 ```powershell
-cd C:\Projects\fortimonitor-mcp-server
+cd C:\Projects\unofficial-fortimonitor-mcp-server
 
 # Set your API key in the .env file (Step 4 above)
 
@@ -454,7 +454,7 @@ $response
 4. Check for errors by running the server manually:
 
 ```powershell
-cd C:\Projects\fortimonitor-mcp-server
+cd C:\Projects\unofficial-fortimonitor-mcp-server
 .\venv\Scripts\Activate.ps1
 python -m src.server
 ```
@@ -471,7 +471,7 @@ Ensure outbound HTTPS (port 443) is allowed to:
 If schema caching fails, ensure the cache directory exists:
 
 ```powershell
-mkdir C:\Projects\fortimonitor-mcp-server\cache\schemas -Force
+mkdir C:\Projects\unofficial-fortimonitor-mcp-server\cache\schemas -Force
 ```
 
 ---

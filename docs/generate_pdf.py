@@ -711,7 +711,7 @@ def build_pdf():
         '    "fortimonitor": {\n'
         '      "command": "python",\n'
         '      "args": ["-m", "src.server"],\n'
-        '      "cwd": "/path/to/fortimonitor-mcp-server",\n'
+        '      "cwd": "/path/to/unofficial-fortimonitor-mcp-server",\n'
         '      "env": {\n'
         '        "FORTIMONITOR_API_KEY": "your_key_here"\n'
         '      }\n'
@@ -748,7 +748,7 @@ def build_pdf():
     # =========================================================================
     # OUTPUT
     # =========================================================================
-    output_path = "/Users/gregorijenkins/Programming/fortimonitor-mcp-server/docs/PROJECT_DETAIL.pdf"
+    output_path = "/Users/gregorijenkins/Programming/unofficial-fortimonitor-mcp-server/docs/PROJECT_DETAIL.pdf"
     pdf.output(output_path)
     print(f"PDF generated: {output_path}")
     return output_path
