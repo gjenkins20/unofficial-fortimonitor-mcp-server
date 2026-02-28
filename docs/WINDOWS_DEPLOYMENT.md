@@ -181,7 +181,7 @@ This approach starts a long-running container once, and Claude Desktop connects 
 docker run -d --name unofficial-fortimonitor-mcp `
   -e FORTIMONITOR_API_KEY=<your-api-key> `
   -e FORTIMONITOR_BASE_URL=https://api2.panopta.com/v2 `
-  ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest `
+  gjenkins20/unofficial-fortimonitor-mcp:latest `
   tail -f /dev/null
 ```
 
@@ -220,7 +220,7 @@ This approach starts a new container each time Claude Desktop connects. No need 
         "run", "--rm", "-i",
         "-e", "FORTIMONITOR_API_KEY=<your-api-key>",
         "-e", "FORTIMONITOR_BASE_URL=https://api2.panopta.com/v2",
-        "ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest",
+        "gjenkins20/unofficial-fortimonitor-mcp:latest",
         "python", "-m", "src.server"
       ]
     }
@@ -329,7 +329,7 @@ If the server starts without errors and waits for input, the Python environment 
 | `ModuleNotFoundError: No module named 'mcp'` | System Python is being used instead of the virtual environment | Change the command to use `.venv\Scripts\python.exe` instead of `python` |
 | `failed to connect to docker API at npipe://...` | Docker Desktop is not running | Start Docker Desktop before opening Claude Desktop |
 | Server disconnected immediately after connecting | Using `-t` or `-d` flags with `docker run` | Remove `-t` and `-d` flags; use only `--rm -i` |
-| `pull access denied for unofficial-fortimonitor-mcp` | Using short image name without registry prefix | Use the full image path: `ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest` |
+| `pull access denied for unofficial-fortimonitor-mcp` | Using short image name without registry prefix | Use the full image path: `gjenkins20/unofficial-fortimonitor-mcp:latest` |
 | Server shows "failed" in Settings > Developer | Configuration file was not reloaded | Fully close and reopen Claude Desktop after every config change |
 | JSON parse error when Claude Desktop starts | Single backslashes in file paths | Use double backslashes (`\\`) for all paths in the JSON config |
 | `python is not recognized as an internal or external command` | Python is not on the system PATH | Reinstall Python and check "Add Python to PATH", or use the full path to `python.exe` |
@@ -403,7 +403,7 @@ If the server is not connecting, work through this checklist:
 | Tool Count | 241 tools |
 | Transport | stdio (JSON-RPC 2.0 over stdin/stdout) |
 | Python Module | `src.server` |
-| Docker Image | `ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest` |
+| Docker Image | `gjenkins20/unofficial-fortimonitor-mcp:latest` |
 
 ### 8.4 Complete Validated Configuration (Copy-Paste Ready)
 

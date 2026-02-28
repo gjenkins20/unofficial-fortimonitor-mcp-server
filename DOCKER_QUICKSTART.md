@@ -5,34 +5,17 @@ This guide helps you get started with the FortiMonitor MCP Server container.
 ## Prerequisites
 
 - Docker Desktop installed and running
-- GitHub account (with access to the repository)
-- GitHub Personal Access Token with `read:packages` scope
 - Your own FortiMonitor API key
 
 ## Quick Start
 
-### 1. Create a GitHub Personal Access Token
-
-1. Go to: https://github.com/settings/tokens/new
-2. Give it a name (e.g., "Docker Pull Access")
-3. Select scope: `read:packages`
-4. Click "Generate token" and copy it
-
-### 2. Login to GitHub Container Registry
+### 1. Pull the Image
 
 ```bash
-docker login ghcr.io -u YOUR_GITHUB_USERNAME
+docker pull gjenkins20/unofficial-fortimonitor-mcp:latest
 ```
 
-When prompted for password, paste your Personal Access Token.
-
-### 3. Pull the Image
-
-```bash
-docker pull ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest
-```
-
-### 3. Create Environment File
+### 2. Create Environment File
 
 Create a `.env` file with your API key:
 
@@ -41,7 +24,7 @@ Create a `.env` file with your API key:
 FORTIMONITOR_API_KEY=your-api-key-here
 ```
 
-### 4. Run with Docker Compose (Recommended)
+### 3. Run with Docker Compose (Recommended)
 
 Save the `docker-compose.share.yml` file and run:
 
@@ -49,14 +32,14 @@ Save the `docker-compose.share.yml` file and run:
 docker-compose -f docker-compose.share.yml up -d
 ```
 
-### 5. Run with Docker CLI (Alternative)
+### 4. Run with Docker CLI (Alternative)
 
 ```bash
 docker run -d \
   --name unofficial-fortimonitor-mcp \
   -e FORTIMONITOR_API_KEY=your-api-key-here \
   --restart unless-stopped \
-  ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest
+  gjenkins20/unofficial-fortimonitor-mcp:latest
 ```
 
 ## Verification
@@ -75,7 +58,7 @@ docker exec unofficial-fortimonitor-mcp python -c "from src.config import get_se
 
 ## Using with Claude Desktop
 
-Add to your Claude Desktop config (`~/.config/claude/claude_desktop_config.json` on Linux/Mac or `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
+Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS or `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
 
 ```json
 {
@@ -113,10 +96,19 @@ docker exec unofficial-fortimonitor-mcp python -c "from src.config import get_se
 
 ### Update to latest version
 ```bash
-docker pull ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest
+docker pull gjenkins20/unofficial-fortimonitor-mcp:latest
 docker-compose -f docker-compose.share.yml up -d --force-recreate
+```
+
+## Alternative: GitHub Container Registry
+
+The image is also available on GHCR. This requires a GitHub Personal Access Token with `read:packages` scope:
+
+```bash
+docker login ghcr.io -u YOUR_GITHUB_USERNAME
+docker pull ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest
 ```
 
 ## Support
 
-For issues, contact the repository maintainer.
+For issues, file a report at the [GitHub repository](https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server/issues).

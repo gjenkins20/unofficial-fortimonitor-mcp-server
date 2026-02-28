@@ -71,11 +71,10 @@ Project tasks and planned work for FortiMonitor MCP Server.
 - [x] **Make GitHub repo public**
   - Git history scrubbed, internal files removed, repo made public
 
-- [ ] **Publish to Docker Hub as community edition**
-  - Create Docker Hub repo (e.g., `gjenkins20/unofficial-fortimonitor-mcp-server`)
-  - Update CI/CD workflow to push to Docker Hub (in addition to or instead of ghcr.io)
-  - Tag as `community` or `unofficial` to set expectations
-  - Update Docker Quickstart docs with new image name
+- [x] **Publish to Docker Hub as community edition**
+  - Docker Hub repo: `gjenkins20/unofficial-fortimonitor-mcp` (public)
+  - CI/CD pushes to both Docker Hub and GHCR
+  - Docker Quickstart and docs updated to use Docker Hub as primary source
 
 ---
 
@@ -129,4 +128,4 @@ These are planned enhancements beyond the initial v2.0 release, from Section 13 
 
 ---
 
-*Last updated: 2026-02-27*
+*Last updated: 2026-02-28*

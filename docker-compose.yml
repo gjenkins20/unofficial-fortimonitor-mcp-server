@@ -16,7 +16,7 @@ services:
       context: .
       dockerfile: Dockerfile
     # Alternatively, use published image:
-    # image: your-dockerhub-username/unofficial-fortimonitor-mcp:latest
+    # image: gjenkins20/unofficial-fortimonitor-mcp:latest
 
     container_name: unofficial-fortimonitor-mcp
 

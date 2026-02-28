@@ -38,7 +38,7 @@ Model Context Protocol (MCP) server for FortiMonitor/Panopta v2 API integration 
 docker run -d \
   --name unofficial-fortimonitor-mcp \
   -e FORTIMONITOR_API_KEY=your-api-key-here \
-  unofficial-fortimonitor-mcp:latest
+  gjenkins20/unofficial-fortimonitor-mcp:latest
 
 # Or use Docker Compose
 cp .env.example .env
