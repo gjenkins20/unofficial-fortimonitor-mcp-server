@@ -68,9 +68,8 @@ Project tasks and planned work for FortiMonitor MCP Server.
   - Added "About the Developer" section
   - Updated repo path references throughout
 
-- [ ] **Make GitHub repo public**
-  - Final security review pass
-  - `gh repo edit --visibility public`
+- [x] **Make GitHub repo public**
+  - Git history scrubbed, internal files removed, repo made public
 
 - [ ] **Publish to Docker Hub as community edition**
   - Create Docker Hub repo (e.g., `gjenkins20/unofficial-fortimonitor-mcp-server`)
