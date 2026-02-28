@@ -60,7 +60,7 @@ This builds the image (Python 3.11-slim base, non-root user) and starts the cont
 docker-compose ps
 ```
 
-You should see the `fortimonitor-mcp` service with status "Up" and health "healthy".
+You should see the `unofficial-fortimonitor-mcp` service with status "Up" and health "healthy".
 
 **Step 5: Configure your MCP client**
 
@@ -72,7 +72,7 @@ In your Claude Desktop configuration (typically `claude_desktop_config.json`), a
     "fortimonitor": {
       "command": "docker",
       "args": [
-        "exec", "-i", "fortimonitor-mcp",
+        "exec", "-i", "unofficial-fortimonitor-mcp",
         "python", "-m", "src.server"
       ]
     }
@@ -168,7 +168,7 @@ All configuration is done through environment variables, typically set in a `.en
 |----------|----------|---------|-------------|
 | `FORTIMONITOR_API_KEY` | **Yes** | *(none)* | Your FortiMonitor/Panopta API key |
 | `FORTIMONITOR_BASE_URL` | No | `https://api2.panopta.com/v2` | FortiMonitor API base URL |
-| `MCP_SERVER_NAME` | No | `fortimonitor-mcp` | Server name reported to MCP clients |
+| `MCP_SERVER_NAME` | No | `unofficial-fortimonitor-mcp` | Server name reported to MCP clients |
 | `MCP_SERVER_VERSION` | No | `1.0.0` | Server version reported to MCP clients |
 | `LOG_LEVEL` | No | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR) |
 | `ENABLE_SCHEMA_CACHE` | No | `true` | Enable caching of API schema data |
@@ -801,7 +801,7 @@ For compliance and SLA reporting:
 
 **Solutions**:
 
-- **Container not starting**: Check logs with `docker-compose logs fortimonitor-mcp`
+- **Container not starting**: Check logs with `docker-compose logs unofficial-fortimonitor-mcp`
 - **Health check failing**: Ensure the `.env` file exists and has valid values. Run `docker-compose restart`
 - **Permission errors**: The container runs as non-root user `mcpuser`. Ensure the cache volume has correct permissions
 - **Memory issues**: The container is limited to 512 MB. If you see OOM errors, increase the memory limit in `docker-compose.yml`
@@ -845,7 +845,7 @@ To enable detailed logging for debugging:
 1. Set `LOG_LEVEL=DEBUG` in your `.env` file
 2. Restart the server or container
 3. Review logs:
-   - **Docker**: `docker-compose logs -f fortimonitor-mcp`
+   - **Docker**: `docker-compose logs -f unofficial-fortimonitor-mcp`
    - **Local**: Logs appear on stderr in the terminal
 
 Log messages include timestamps, module names, and log levels for easy filtering.

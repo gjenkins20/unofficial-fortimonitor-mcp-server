@@ -10,15 +10,15 @@
 # =============================================================================
 
 services:
-  fortimonitor-mcp:
+  unofficial-fortimonitor-mcp:
     # Build from local Dockerfile or use pre-built image
     build:
       context: .
       dockerfile: Dockerfile
     # Alternatively, use published image:
-    # image: your-dockerhub-username/fortimonitor-mcp:latest
+    # image: your-dockerhub-username/unofficial-fortimonitor-mcp:latest
 
-    container_name: fortimonitor-mcp
+    container_name: unofficial-fortimonitor-mcp
 
     # Environment variables from .env file
     environment:
@@ -29,7 +29,7 @@ services:
       - FORTIMONITOR_BASE_URL=${FORTIMONITOR_BASE_URL:-https://api2.panopta.com/v2}
 
       # Optional: MCP Server Configuration
-      - MCP_SERVER_NAME=${MCP_SERVER_NAME:-fortimonitor-mcp}
+      - MCP_SERVER_NAME=${MCP_SERVER_NAME:-unofficial-fortimonitor-mcp}
       - MCP_SERVER_VERSION=${MCP_SERVER_VERSION:-1.0.0}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
 

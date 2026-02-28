@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     # MCP Server Configuration
     mcp_server_name: str = Field(
-        default="fortimonitor-mcp", description="Name of the MCP server"
+        default="unofficial-fortimonitor-mcp", description="Name of the MCP server"
     )
     mcp_server_version: str = Field(
         default="0.1.0", description="Version of the MCP server"

@@ -13,7 +13,7 @@
 set -e
 
 # Configuration
-IMAGE_NAME="${IMAGE_NAME:-fortimonitor-mcp}"
+IMAGE_NAME="${IMAGE_NAME:-unofficial-fortimonitor-mcp}"
 VERSION="${VERSION:-latest}"
 REGISTRY="${REGISTRY:-}"
 

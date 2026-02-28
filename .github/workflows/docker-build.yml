@@ -28,7 +28,7 @@ on:
       - master
 
 env:
-  IMAGE_NAME: fortimonitor-mcp
+  IMAGE_NAME: unofficial-fortimonitor-mcp
 
 jobs:
   # ==========================================================================

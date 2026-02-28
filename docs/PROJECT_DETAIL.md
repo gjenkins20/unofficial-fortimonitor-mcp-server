@@ -564,7 +564,7 @@ async def handle_tool_name(arguments: dict, client: FortiMonitorClient) -> List[
 
 Docker Compose Configuration:
 +---------------------------------------------------------------------+
-|  Service: fortimonitor-mcp                                          |
+|  Service: unofficial-fortimonitor-mcp                                          |
 |    - Named volume: fortimonitor-cache -> /app/cache                 |
 |    - Resource limits: 1 CPU, 512MB RAM                              |
 |    - Resource reservations: 0.25 CPU, 128MB RAM                     |
@@ -576,7 +576,7 @@ Docker Compose Configuration:
 +---------------------------------------------------------------------+
 
 Invocation Pattern:
-  Claude Desktop config -> docker exec -i fortimonitor-mcp python -m src.server
+  Claude Desktop config -> docker exec -i unofficial-fortimonitor-mcp python -m src.server
   (Container stays alive; MCP server invoked on-demand per session)
 ```
 
@@ -734,7 +734,7 @@ Deployment Option A: Docker (Recommended)
          "fortimonitor": {                                       v
            "command": "docker",                         +------------------+
            "args": ["exec", "-i",                       |  FortiMonitor    |
-                    "fortimonitor-mcp",                 |  Cloud API       |
+                    "unofficial-fortimonitor-mcp",                 |  Cloud API       |
                     "python", "-m",                     +------------------+
                     "src.server"]
          }

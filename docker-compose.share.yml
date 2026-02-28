@@ -9,9 +9,9 @@
 # =============================================================================
 
 services:
-  fortimonitor-mcp:
-    image: ghcr.io/gjenkins20/fortimonitor-mcp:latest
-    container_name: fortimonitor-mcp
+  unofficial-fortimonitor-mcp:
+    image: ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest
+    container_name: unofficial-fortimonitor-mcp
 
     # Environment variables
     environment:

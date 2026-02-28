@@ -8,11 +8,11 @@ An unofficial [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) s
 
 ```bash
 docker run -d \
-  --name fortimonitor-mcp \
+  --name unofficial-fortimonitor-mcp \
   -e FORTIMONITOR_API_KEY=your-api-key-here \
   --restart unless-stopped \
   --security-opt no-new-privileges:true \
-  gjenkins20/fortimonitor-mcp:latest
+  gjenkins20/unofficial-fortimonitor-mcp:latest
 ```
 
 Or with Docker Compose:
@@ -35,7 +35,7 @@ Add the following to your Claude Desktop config file:
   "mcpServers": {
     "fortimonitor": {
       "command": "docker",
-      "args": ["exec", "-i", "fortimonitor-mcp", "python", "-m", "src.server"]
+      "args": ["exec", "-i", "unofficial-fortimonitor-mcp", "python", "-m", "src.server"]
     }
   }
 }
@@ -72,10 +72,10 @@ Claude Desktop  <--stdio-->  docker exec  <-->  MCP Server  <--HTTPS-->  FortiMo
 ```bash
 # Using a named volume (recommended)
 docker run -d \
-  --name fortimonitor-mcp \
+  --name unofficial-fortimonitor-mcp \
   -e FORTIMONITOR_API_KEY=your-key \
   -v fortimonitor-cache:/app/cache \
-  gjenkins20/fortimonitor-mcp:latest
+  gjenkins20/unofficial-fortimonitor-mcp:latest
 ```
 
 ## Tool Categories (241 Tools)
@@ -123,7 +123,7 @@ Multi-architecture image supporting:
 The image includes a built-in health check that verifies the configuration can be loaded:
 
 ```bash
-docker inspect --format='{{.State.Health.Status}}' fortimonitor-mcp
+docker inspect --format='{{.State.Health.Status}}' unofficial-fortimonitor-mcp
 ```
 
 ## Resource Recommendations

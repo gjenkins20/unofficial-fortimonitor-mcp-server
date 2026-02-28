@@ -12,7 +12,7 @@ REM ============================================================================
 setlocal enabledelayedexpansion
 
 REM Configuration
-if "%IMAGE_NAME%"=="" set IMAGE_NAME=fortimonitor-mcp
+if "%IMAGE_NAME%"=="" set IMAGE_NAME=unofficial-fortimonitor-mcp
 if "%VERSION%"=="" set VERSION=latest
 
 set TESTS_PASSED=0

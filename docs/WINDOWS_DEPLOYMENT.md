@@ -178,10 +178,10 @@ This approach starts a long-running container once, and Claude Desktop connects 
 **Step 1 — Start the container** (run once in PowerShell):
 
 ```powershell
-docker run -d --name fortimonitor-mcp `
+docker run -d --name unofficial-fortimonitor-mcp `
   -e FORTIMONITOR_API_KEY=<your-api-key> `
   -e FORTIMONITOR_BASE_URL=https://api2.panopta.com/v2 `
-  ghcr.io/gjenkins20/fortimonitor-mcp:latest `
+  ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest `
   tail -f /dev/null
 ```
 
@@ -192,7 +192,7 @@ docker run -d --name fortimonitor-mcp `
   "mcpServers": {
     "fortimonitor": {
       "command": "docker",
-      "args": ["exec", "-i", "fortimonitor-mcp", "python", "-m", "src.server"]
+      "args": ["exec", "-i", "unofficial-fortimonitor-mcp", "python", "-m", "src.server"]
     }
   }
 }
@@ -202,10 +202,10 @@ docker run -d --name fortimonitor-mcp `
 
 | Action | Command |
 |--------|---------|
-| Stop the container | `docker stop fortimonitor-mcp` |
-| Start it again | `docker start fortimonitor-mcp` |
-| Remove it entirely | `docker rm -f fortimonitor-mcp` |
-| View container logs | `docker logs fortimonitor-mcp` |
+| Stop the container | `docker stop unofficial-fortimonitor-mcp` |
+| Start it again | `docker start unofficial-fortimonitor-mcp` |
+| Remove it entirely | `docker rm -f unofficial-fortimonitor-mcp` |
+| View container logs | `docker logs unofficial-fortimonitor-mcp` |
 
 ### 4.2 Option B: Fresh Container Per Session (docker run)
 
@@ -220,7 +220,7 @@ This approach starts a new container each time Claude Desktop connects. No need 
         "run", "--rm", "-i",
         "-e", "FORTIMONITOR_API_KEY=<your-api-key>",
         "-e", "FORTIMONITOR_BASE_URL=https://api2.panopta.com/v2",
-        "ghcr.io/gjenkins20/fortimonitor-mcp:latest",
+        "ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest",
         "python", "-m", "src.server"
       ]
     }
@@ -329,7 +329,7 @@ If the server starts without errors and waits for input, the Python environment 
 | `ModuleNotFoundError: No module named 'mcp'` | System Python is being used instead of the virtual environment | Change the command to use `.venv\Scripts\python.exe` instead of `python` |
 | `failed to connect to docker API at npipe://...` | Docker Desktop is not running | Start Docker Desktop before opening Claude Desktop |
 | Server disconnected immediately after connecting | Using `-t` or `-d` flags with `docker run` | Remove `-t` and `-d` flags; use only `--rm -i` |
-| `pull access denied for fortimonitor-mcp` | Using short image name without registry prefix | Use the full image path: `ghcr.io/gjenkins20/fortimonitor-mcp:latest` |
+| `pull access denied for unofficial-fortimonitor-mcp` | Using short image name without registry prefix | Use the full image path: `ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest` |
 | Server shows "failed" in Settings > Developer | Configuration file was not reloaded | Fully close and reopen Claude Desktop after every config change |
 | JSON parse error when Claude Desktop starts | Single backslashes in file paths | Use double backslashes (`\\`) for all paths in the JSON config |
 | `python is not recognized as an internal or external command` | Python is not on the system PATH | Reinstall Python and check "Add Python to PATH", or use the full path to `python.exe` |
@@ -388,7 +388,7 @@ If the server is not connecting, work through this checklist:
 |----------|----------|---------|-------------|
 | `FORTIMONITOR_API_KEY` | Yes | — | Your FortiMonitor API key |
 | `FORTIMONITOR_BASE_URL` | No | `https://api2.panopta.com/v2` | FortiMonitor API endpoint |
-| `MCP_SERVER_NAME` | No | `fortimonitor-mcp` | Server name shown in Claude |
+| `MCP_SERVER_NAME` | No | `unofficial-fortimonitor-mcp` | Server name shown in Claude |
 | `LOG_LEVEL` | No | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR) |
 | `ENABLE_SCHEMA_CACHE` | No | `true` | Enable API schema caching |
 | `SCHEMA_CACHE_TTL` | No | `86400` | Cache TTL in seconds (24 hours) |
@@ -403,7 +403,7 @@ If the server is not connecting, work through this checklist:
 | Tool Count | 241 tools |
 | Transport | stdio (JSON-RPC 2.0 over stdin/stdout) |
 | Python Module | `src.server` |
-| Docker Image | `ghcr.io/gjenkins20/fortimonitor-mcp:latest` |
+| Docker Image | `ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest` |
 
 ### 8.4 Complete Validated Configuration (Copy-Paste Ready)
 

@@ -173,7 +173,7 @@ FORTIMONITOR_API_KEY=your_actual_api_key_here
 FORTIMONITOR_BASE_URL=https://api2.panopta.com/v2
 
 # Server identification
-MCP_SERVER_NAME=fortimonitor-mcp
+MCP_SERVER_NAME=unofficial-fortimonitor-mcp
 MCP_SERVER_VERSION=1.0.0
 
 # Logging level (use DEBUG for POC troubleshooting, INFO for normal operation)
@@ -224,7 +224,7 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-5. Install the project in editable mode (creates the `fortimonitor-mcp` entry point):
+5. Install the project in editable mode (creates the `unofficial-fortimonitor-mcp` entry point):
 
 ```powershell
 pip install -e .
@@ -393,7 +393,7 @@ docker-compose up -d --build
 
 # Verify it is running
 docker ps
-docker logs fortimonitor-mcp
+docker logs unofficial-fortimonitor-mcp
 ```
 
 ### Configure Claude Code for Docker
@@ -403,7 +403,7 @@ docker logs fortimonitor-mcp
   "mcpServers": {
     "fortimonitor": {
       "command": "docker",
-      "args": ["exec", "-i", "fortimonitor-mcp", "python", "-m", "src.server"]
+      "args": ["exec", "-i", "unofficial-fortimonitor-mcp", "python", "-m", "src.server"]
     }
   }
 }

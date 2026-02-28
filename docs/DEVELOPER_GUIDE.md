@@ -522,7 +522,7 @@ non-root user (`mcpuser`) for security.
 ### Building the image
 
 ```bash
-docker build -t fortimonitor-mcp .
+docker build -t unofficial-fortimonitor-mcp .
 ```
 
 ### Running with Docker Compose (recommended)
@@ -542,7 +542,7 @@ docker build -t fortimonitor-mcp .
 4. The container stays alive (`tail -f /dev/null`) and the MCP server is
    invoked on-demand via `docker exec`:
    ```bash
-   docker exec -i fortimonitor-mcp python -m src.server
+   docker exec -i unofficial-fortimonitor-mcp python -m src.server
    ```
 
 Docker Compose provides:
@@ -556,9 +556,9 @@ Docker Compose provides:
 
 ```bash
 docker run -d \
-  --name fortimonitor-mcp \
+  --name unofficial-fortimonitor-mcp \
   --env-file .env \
-  fortimonitor-mcp
+  unofficial-fortimonitor-mcp
 ```
 
 **Important on Windows:** Use `--env-file .env` instead of inline `-e` with
@@ -567,7 +567,7 @@ docker run -d \
 To invoke the MCP server inside the running container:
 
 ```bash
-docker exec -i fortimonitor-mcp python -m src.server
+docker exec -i unofficial-fortimonitor-mcp python -m src.server
 ```
 
 ### Running locally (without Docker)
@@ -604,7 +604,7 @@ uses `pydantic-settings` to load values from environment variables and `.env`.
 |----------|----------|---------|-------------|
 | `FORTIMONITOR_API_KEY` | **Yes** | -- | Your FortiMonitor/Panopta API key |
 | `FORTIMONITOR_BASE_URL` | No | `https://api2.panopta.com/v2` | API base URL |
-| `MCP_SERVER_NAME` | No | `fortimonitor-mcp` | Server name shown in MCP clients |
+| `MCP_SERVER_NAME` | No | `unofficial-fortimonitor-mcp` | Server name shown in MCP clients |
 | `MCP_SERVER_VERSION` | No | `0.1.0` | Server version string |
 | `LOG_LEVEL` | No | `INFO` | Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL |
 | `ENABLE_SCHEMA_CACHE` | No | `true` | Enable caching of API schemas |

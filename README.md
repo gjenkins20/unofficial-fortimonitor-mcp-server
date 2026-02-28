@@ -36,9 +36,9 @@ Model Context Protocol (MCP) server for FortiMonitor/Panopta v2 API integration 
 ```bash
 # Run with Docker
 docker run -d \
-  --name fortimonitor-mcp \
+  --name unofficial-fortimonitor-mcp \
   -e FORTIMONITOR_API_KEY=your-api-key-here \
-  fortimonitor-mcp:latest
+  unofficial-fortimonitor-mcp:latest
 
 # Or use Docker Compose
 cp .env.example .env
@@ -139,7 +139,7 @@ Then add to your Claude Desktop config:
   "mcpServers": {
     "fortimonitor": {
       "command": "docker",
-      "args": ["exec", "-i", "fortimonitor-mcp", "python", "-m", "src.server"]
+      "args": ["exec", "-i", "unofficial-fortimonitor-mcp", "python", "-m", "src.server"]
     }
   }
 }

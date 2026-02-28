@@ -29,7 +29,7 @@ When prompted for password, paste your Personal Access Token.
 ### 3. Pull the Image
 
 ```bash
-docker pull ghcr.io/gjenkins20/fortimonitor-mcp:latest
+docker pull ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest
 ```
 
 ### 3. Create Environment File
@@ -53,10 +53,10 @@ docker-compose -f docker-compose.share.yml up -d
 
 ```bash
 docker run -d \
-  --name fortimonitor-mcp \
+  --name unofficial-fortimonitor-mcp \
   -e FORTIMONITOR_API_KEY=your-api-key-here \
   --restart unless-stopped \
-  ghcr.io/gjenkins20/fortimonitor-mcp:latest
+  ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest
 ```
 
 ## Verification
@@ -64,13 +64,13 @@ docker run -d \
 Check the container is running:
 
 ```bash
-docker ps | grep fortimonitor-mcp
+docker ps | grep unofficial-fortimonitor-mcp
 ```
 
 Test the configuration:
 
 ```bash
-docker exec fortimonitor-mcp python -c "from src.config import get_settings; print('OK')"
+docker exec unofficial-fortimonitor-mcp python -c "from src.config import get_settings; print('OK')"
 ```
 
 ## Using with Claude Desktop
@@ -82,7 +82,7 @@ Add to your Claude Desktop config (`~/.config/claude/claude_desktop_config.json`
   "mcpServers": {
     "fortimonitor": {
       "command": "docker",
-      "args": ["exec", "-i", "fortimonitor-mcp", "python", "-m", "src.server"]
+      "args": ["exec", "-i", "unofficial-fortimonitor-mcp", "python", "-m", "src.server"]
     }
   }
 }
@@ -102,18 +102,18 @@ Add to your Claude Desktop config (`~/.config/claude/claude_desktop_config.json`
 
 ### Container won't start
 ```bash
-docker logs fortimonitor-mcp
+docker logs unofficial-fortimonitor-mcp
 ```
 
 ### API key issues
 Verify your API key is set correctly:
 ```bash
-docker exec fortimonitor-mcp python -c "from src.config import get_settings; s = get_settings(); print(f'API Key set: {bool(s.fortimonitor_api_key)}')"
+docker exec unofficial-fortimonitor-mcp python -c "from src.config import get_settings; s = get_settings(); print(f'API Key set: {bool(s.fortimonitor_api_key)}')"
 ```
 
 ### Update to latest version
 ```bash
-docker pull ghcr.io/gjenkins20/fortimonitor-mcp:latest
+docker pull ghcr.io/gjenkins20/unofficial-fortimonitor-mcp:latest
 docker-compose -f docker-compose.share.yml up -d --force-recreate
 ```
 

@@ -34,7 +34,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "fortimonitor-mcp=src.server:main",
+            "unofficial-fortimonitor-mcp=src.server:main",
         ]
     },
     classifiers=[

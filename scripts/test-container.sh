@@ -12,7 +12,7 @@
 set -e
 
 # Configuration
-IMAGE_NAME="${IMAGE_NAME:-fortimonitor-mcp}"
+IMAGE_NAME="${IMAGE_NAME:-unofficial-fortimonitor-mcp}"
 VERSION="${VERSION:-latest}"
 API_KEY="${FORTIMONITOR_API_KEY:-}"
 

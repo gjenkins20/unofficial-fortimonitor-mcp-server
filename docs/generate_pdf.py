@@ -518,7 +518,7 @@ def build_pdf():
     pdf.sub_subsection_heading("Invocation Pattern")
     pdf.body_text(
         "The container stays alive via tail -f /dev/null. The MCP server is invoked on-demand per Claude "
-        "session via: docker exec -i fortimonitor-mcp python -m src.server. This enables instant session "
+        "session via: docker exec -i unofficial-fortimonitor-mcp python -m src.server. This enables instant session "
         "startup without container restart overhead."
     )
 
@@ -691,7 +691,7 @@ def build_pdf():
         '  "mcpServers": {\n'
         '    "fortimonitor": {\n'
         '      "command": "docker",\n'
-        '      "args": ["exec", "-i", "fortimonitor-mcp",\n'
+        '      "args": ["exec", "-i", "unofficial-fortimonitor-mcp",\n'
         '               "python", "-m", "src.server"]\n'
         '    }\n'
         '  }\n'
