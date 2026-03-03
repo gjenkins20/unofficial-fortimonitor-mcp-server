@@ -25,6 +25,74 @@ def _extract_id_from_url(url: str) -> str:
     return "N/A"
 
 
+def _normalize_tags(tags) -> list:
+    """Normalize tags from API response to a list of strings.
+
+    The API may return tags as a list of strings or a comma-separated string.
+    This function normalizes both formats to a list.
+    """
+    if tags is None:
+        return []
+    if isinstance(tags, list):
+        return [str(t).strip() for t in tags if str(t).strip()]
+    if isinstance(tags, str):
+        return [t.strip() for t in tags.split(",") if t.strip()]
+    return []
+
+
+# Fields that must NEVER be included in SNMP resource PUT payloads.
+# Including these causes HTTP 500 errors from the API.
+_SNMP_RESOURCE_READONLY_FIELDS = frozenset({
+    "template", "template_snmp_resource", "formatted_name",
+    "id", "url", "resource_url", "status", "server_url", "thresholds",
+})
+
+# Fields that are safe to echo back from GET in a PUT payload when non-null.
+_SNMP_RESOURCE_OPTIONAL_WRITABLE_FIELDS = (
+    "port", "server_interface", "user",
+    "auth_algorithm", "auth_key", "enc_algorithm", "enc_key",
+)
+
+
+def _build_safe_snmp_resource_put_payload(
+    current: dict,
+    overrides: dict,
+    merged_tags: list | None = None,
+) -> dict:
+    """Build a safe PUT payload for an SNMP resource.
+
+    Starts from the GET response (current), applies overrides from user input,
+    and ensures all required fields are present while excluding read-only fields.
+    """
+    payload = {
+        "name": current.get("name", ""),
+        "frequency": current.get("frequency", 60),
+        "type": current.get("type", "gauge"),
+        "base_oid": current.get("base_oid", current.get("oid", "")),
+    }
+
+    # version and community are required non-null for template-inherited resources
+    payload["version"] = current.get("version") or "2c"
+    payload["community"] = current.get("community") or "public"
+
+    # Include optional writable fields if non-null in current state
+    for field in _SNMP_RESOURCE_OPTIONAL_WRITABLE_FIELDS:
+        val = current.get(field)
+        if val is not None:
+            payload[field] = val
+
+    # Include tags
+    if merged_tags is not None:
+        payload["tags"] = merged_tags
+
+    # Apply user overrides (these take precedence)
+    for key, value in overrides.items():
+        if value is not None:
+            payload[key] = value
+
+    return payload
+
+
 # ============================================================================
 # TOOL DEFINITIONS
 # ============================================================================
@@ -257,6 +325,28 @@ def create_snmp_resource_tool_definition() -> Tool:
                 "description": {
                     "type": "string",
                     "description": "Optional description of the SNMP resource"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Tags to apply to the new resource (optional)"
+                },
+                "frequency": {
+                    "type": "integer",
+                    "description": "Polling frequency in seconds (optional)"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": ["gauge", "counter", "gauge_ratio"],
+                    "description": "SNMP resource type (optional)"
+                },
+                "version": {
+                    "type": "string",
+                    "description": "SNMP version, e.g. '2c' or '3' (optional)"
+                },
+                "community": {
+                    "type": "string",
+                    "description": "SNMP community string (optional)"
                 }
             },
             "required": ["server_id"]
@@ -270,7 +360,10 @@ def update_snmp_resource_tool_definition() -> Tool:
         name="update_snmp_resource",
         description=(
             "Update an existing SNMP resource on a server. "
-            "Can change the name, OID, or description."
+            "Uses a pre-flight GET to fetch current state, then constructs a safe PUT payload "
+            "that preserves all required fields. Tags are merged (set union) with existing tags — "
+            "no duplicates. You can update any combination of fields; the pre-flight GET ensures "
+            "all required API fields are always included."
         ),
         inputSchema={
             "type": "object",
@@ -289,11 +382,37 @@ def update_snmp_resource_tool_definition() -> Tool:
                 },
                 "oid": {
                     "type": "string",
-                    "description": "New SNMP OID (optional)"
+                    "description": "New SNMP OID (maps to base_oid in API, optional)"
                 },
                 "description": {
                     "type": "string",
                     "description": "New description (optional)"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Tags to apply (merged with existing tags, no duplicates)"
+                },
+                "frequency": {
+                    "type": "integer",
+                    "description": "Polling frequency in seconds (optional)"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": ["gauge", "counter", "gauge_ratio"],
+                    "description": "SNMP resource type (optional)"
+                },
+                "version": {
+                    "type": "string",
+                    "description": "SNMP version, e.g. '2c' or '3' (optional)"
+                },
+                "community": {
+                    "type": "string",
+                    "description": "SNMP community string (optional)"
+                },
+                "port": {
+                    "type": "integer",
+                    "description": "SNMP port number (optional)"
                 }
             },
             "required": ["server_id", "resource_id"]
@@ -352,6 +471,39 @@ def get_snmp_resource_metric_tool_definition() -> Tool:
                 }
             },
             "required": ["server_id", "resource_id"]
+        }
+    )
+
+
+def bulk_tag_snmp_resources_tool_definition() -> Tool:
+    """Return tool definition for bulk-tagging SNMP resources on a server."""
+    return Tool(
+        name="bulk_tag_snmp_resources",
+        description=(
+            "Apply tags to multiple SNMP resources on a server in one operation. "
+            "Uses pre-flight GET + safe PUT for each resource. Tags are merged with "
+            "existing tags (set union, no duplicates). Resources that already have all "
+            "specified tags are skipped. Maximum 100 resources per call."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "server_id": {
+                    "type": "integer",
+                    "description": "ID of the server containing the SNMP resources"
+                },
+                "resource_ids": {
+                    "type": "array",
+                    "items": {"type": "integer"},
+                    "description": "List of SNMP resource IDs to tag (max 100)"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Tags to apply to all specified resources"
+                }
+            },
+            "required": ["server_id", "resource_ids", "tags"]
         }
     )
 
@@ -688,6 +840,9 @@ async def handle_list_server_snmp_resources(
                 output_lines.append(f"  Current Value: {res['value']}")
             if res.get("status"):
                 output_lines.append(f"  Status: {res['status']}")
+            tags = _normalize_tags(res.get("tags"))
+            if tags:
+                output_lines.append(f"  Tags: {', '.join(tags)}")
 
         if total_count > len(resources):
             output_lines.append(f"\n(Showing {len(resources)} of {total_count} total)")
@@ -732,6 +887,8 @@ async def handle_get_snmp_resource_details(
 
         if response.get("oid"):
             output_lines.append(f"OID: {response['oid']}")
+        if response.get("base_oid"):
+            output_lines.append(f"Base OID: {response['base_oid']}")
         if response.get("description"):
             output_lines.append(f"Description: {response['description']}")
         if response.get("value") is not None:
@@ -739,10 +896,28 @@ async def handle_get_snmp_resource_details(
         if response.get("status"):
             output_lines.append(f"Status: {response['status']}")
 
+        # Normalize and display tags
+        tags = _normalize_tags(response.get("tags"))
+        output_lines.append(f"Tags: {', '.join(tags) if tags else '(none)'}")
+
+        # Display other fields
+        _displayed = {
+            "name", "display_name", "oid", "base_oid", "description",
+            "value", "status", "url", "resource_uri", "tags",
+        }
         for key, value in response.items():
-            if key not in ("name", "display_name", "oid", "description",
-                          "value", "status", "url", "resource_uri") and value:
+            if key not in _displayed and value:
                 output_lines.append(f"{key}: {value}")
+
+        # Field writability reference
+        output_lines.append("\n---")
+        output_lines.append("**Writable Fields:** name, frequency, type, base_oid, "
+                            "version, community, tags, port, description, "
+                            "server_interface, user, auth_algorithm, auth_key, "
+                            "enc_algorithm, enc_key")
+        output_lines.append("**Read-Only Fields:** formatted_name, template, "
+                            "template_snmp_resource, id, url, status, "
+                            "server_url, thresholds")
 
         return [TextContent(type="text", text="\n".join(output_lines))]
 
@@ -772,6 +947,11 @@ async def handle_create_snmp_resource(
         name = arguments.get("name")
         oid = arguments.get("oid")
         description = arguments.get("description")
+        tags = arguments.get("tags")
+        frequency = arguments.get("frequency")
+        res_type = arguments.get("type")
+        version = arguments.get("version")
+        community = arguments.get("community")
 
         logger.info(f"Creating SNMP resource on server {server_id}")
 
@@ -782,6 +962,16 @@ async def handle_create_snmp_resource(
             data["oid"] = oid
         if description:
             data["description"] = description
+        if tags:
+            data["tags"] = tags
+        if frequency is not None:
+            data["frequency"] = frequency
+        if res_type:
+            data["type"] = res_type
+        if version:
+            data["version"] = version
+        if community:
+            data["community"] = community
 
         response = client._request(
             "POST",
@@ -800,6 +990,12 @@ async def handle_create_snmp_resource(
             output_lines.append(f"OID: {oid}")
         if description:
             output_lines.append(f"Description: {description}")
+        if tags:
+            output_lines.append(f"Tags: {', '.join(tags)}")
+        if frequency is not None:
+            output_lines.append(f"Frequency: {frequency}s")
+        if res_type:
+            output_lines.append(f"Type: {res_type}")
 
         if isinstance(response, dict) and response.get("url"):
             res_id = _extract_id_from_url(response["url"])
@@ -824,47 +1020,79 @@ async def handle_update_snmp_resource(
     arguments: dict,
     client: FortiMonitorClient
 ) -> List[TextContent]:
-    """Handle update_snmp_resource tool execution."""
+    """Handle update_snmp_resource tool execution.
+
+    Uses a pre-flight GET to fetch current state, merges tags, and constructs
+    a safe PUT payload that avoids API 500 errors from missing required fields
+    or read-only field inclusion.
+    """
     try:
         server_id = arguments["server_id"]
         resource_id = arguments["resource_id"]
-        name = arguments.get("name")
-        oid = arguments.get("oid")
-        description = arguments.get("description")
-
-        if name is None and oid is None and description is None:
-            return [TextContent(
-                type="text",
-                text="Error: At least one of 'name', 'oid', or 'description' must be provided."
-            )]
 
         logger.info(
             f"Updating SNMP resource {resource_id} on server {server_id}"
         )
 
-        data = {}
-        if name is not None:
-            data["name"] = name
-        if oid is not None:
-            data["oid"] = oid
-        if description is not None:
-            data["description"] = description
+        # Pre-flight GET: fetch current resource state
+        endpoint = f"server/{server_id}/snmp_resource/{resource_id}"
+        current = client._request("GET", endpoint)
 
-        client._request(
-            "PUT",
-            f"server/{server_id}/snmp_resource/{resource_id}",
-            json_data=data
+        # Merge tags (set union, no duplicates)
+        new_tags = arguments.get("tags")
+        existing_tags = _normalize_tags(current.get("tags"))
+        if new_tags is not None:
+            merged_tags = list(dict.fromkeys(existing_tags + new_tags))
+        else:
+            merged_tags = existing_tags if existing_tags else None
+
+        # Build user overrides (only fields the user explicitly provided)
+        overrides = {}
+        if arguments.get("name") is not None:
+            overrides["name"] = arguments["name"]
+        if arguments.get("oid") is not None:
+            overrides["base_oid"] = arguments["oid"]
+        if arguments.get("frequency") is not None:
+            overrides["frequency"] = arguments["frequency"]
+        if arguments.get("type") is not None:
+            overrides["type"] = arguments["type"]
+        if arguments.get("version") is not None:
+            overrides["version"] = arguments["version"]
+        if arguments.get("community") is not None:
+            overrides["community"] = arguments["community"]
+        if arguments.get("port") is not None:
+            overrides["port"] = arguments["port"]
+        if arguments.get("description") is not None:
+            overrides["description"] = arguments["description"]
+
+        # Build safe PUT payload
+        data = _build_safe_snmp_resource_put_payload(
+            current, overrides, merged_tags
         )
+
+        client._request("PUT", endpoint, json_data=data)
 
         output_lines = ["**SNMP Resource Updated**\n"]
         output_lines.append(f"Server ID: {server_id}")
         output_lines.append(f"Resource ID: {resource_id}")
-        if name is not None:
-            output_lines.append(f"Name: {name}")
-        if oid is not None:
-            output_lines.append(f"OID: {oid}")
-        if description is not None:
+        if arguments.get("name") is not None:
+            output_lines.append(f"Name: {arguments['name']}")
+        if arguments.get("oid") is not None:
+            output_lines.append(f"OID: {arguments['oid']}")
+        if arguments.get("description") is not None:
             output_lines.append(f"Description: Updated")
+        if new_tags is not None:
+            output_lines.append(f"Tags: {', '.join(merged_tags or [])}")
+        if arguments.get("frequency") is not None:
+            output_lines.append(f"Frequency: {arguments['frequency']}s")
+        if arguments.get("type") is not None:
+            output_lines.append(f"Type: {arguments['type']}")
+        if arguments.get("version") is not None:
+            output_lines.append(f"Version: {arguments['version']}")
+        if arguments.get("community") is not None:
+            output_lines.append(f"Community: Updated")
+        if arguments.get("port") is not None:
+            output_lines.append(f"Port: {arguments['port']}")
 
         return [TextContent(type="text", text="\n".join(output_lines))]
 
@@ -995,6 +1223,100 @@ async def handle_get_snmp_resource_metric(
         return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
 
 
+async def handle_bulk_tag_snmp_resources(
+    arguments: dict,
+    client: FortiMonitorClient
+) -> List[TextContent]:
+    """Handle bulk_tag_snmp_resources tool execution.
+
+    Applies tags to multiple SNMP resources using the safe PUT payload pattern.
+    Skips resources that already have all specified tags (idempotent).
+    """
+    try:
+        server_id = arguments["server_id"]
+        resource_ids = arguments["resource_ids"]
+        new_tags = arguments["tags"]
+
+        if len(resource_ids) > 100:
+            return [TextContent(
+                type="text",
+                text="Error: Maximum 100 resources per call. Please split into smaller batches."
+            )]
+
+        if not new_tags:
+            return [TextContent(
+                type="text",
+                text="Error: At least one tag must be provided."
+            )]
+
+        logger.info(
+            f"Bulk tagging {len(resource_ids)} SNMP resources on server {server_id} "
+            f"with tags: {new_tags}"
+        )
+
+        succeeded = []
+        skipped = []
+        failed = []
+
+        for resource_id in resource_ids:
+            try:
+                endpoint = f"server/{server_id}/snmp_resource/{resource_id}"
+
+                # Pre-flight GET
+                current = client._request("GET", endpoint)
+
+                # Merge tags
+                existing_tags = _normalize_tags(current.get("tags"))
+                new_tag_set = set(new_tags)
+                if new_tag_set.issubset(set(existing_tags)):
+                    skipped.append(resource_id)
+                    continue
+
+                merged_tags = list(dict.fromkeys(existing_tags + new_tags))
+
+                # Build safe PUT payload (no user overrides, just tag merge)
+                data = _build_safe_snmp_resource_put_payload(
+                    current, {}, merged_tags
+                )
+
+                client._request("PUT", endpoint, json_data=data)
+                succeeded.append(resource_id)
+
+            except (APIError, NotFoundError) as e:
+                logger.warning(
+                    f"Failed to tag SNMP resource {resource_id}: {e}"
+                )
+                failed.append((resource_id, str(e)))
+            except Exception as e:
+                logger.warning(
+                    f"Unexpected error tagging SNMP resource {resource_id}: {e}"
+                )
+                failed.append((resource_id, str(e)))
+
+        output_lines = [
+            f"**Bulk Tag SNMP Resources — Server {server_id}**\n",
+            f"Tags applied: {', '.join(new_tags)}",
+            f"Total requested: {len(resource_ids)}",
+            f"Succeeded: {len(succeeded)}",
+            f"Skipped (already tagged): {len(skipped)}",
+            f"Failed: {len(failed)}",
+        ]
+
+        if failed:
+            output_lines.append("\nFailures:")
+            for res_id, err in failed:
+                output_lines.append(f"  Resource {res_id}: {err}")
+
+        return [TextContent(type="text", text="\n".join(output_lines))]
+
+    except APIError as e:
+        logger.error(f"API error in bulk tag operation: {e}")
+        return [TextContent(type="text", text=f"Error: {str(e)}")]
+    except Exception as e:
+        logger.exception("Unexpected error in bulk tag operation")
+        return [TextContent(type="text", text=f"Unexpected error: {str(e)}")]
+
+
 # ============================================================================
 # EXPORT DICTS
 # ============================================================================
@@ -1012,6 +1334,7 @@ SNMP_TOOL_DEFINITIONS = {
     "update_snmp_resource": update_snmp_resource_tool_definition,
     "delete_snmp_resource": delete_snmp_resource_tool_definition,
     "get_snmp_resource_metric": get_snmp_resource_metric_tool_definition,
+    "bulk_tag_snmp_resources": bulk_tag_snmp_resources_tool_definition,
 }
 
 SNMP_HANDLERS = {
@@ -1027,4 +1350,5 @@ SNMP_HANDLERS = {
     "update_snmp_resource": handle_update_snmp_resource,
     "delete_snmp_resource": handle_delete_snmp_resource,
     "get_snmp_resource_metric": handle_get_snmp_resource_metric,
+    "bulk_tag_snmp_resources": handle_bulk_tag_snmp_resources,
 }

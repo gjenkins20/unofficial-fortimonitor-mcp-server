@@ -79,6 +79,6 @@ class TestMainServerExcludesWebGUI:
     def test_main_server_tool_count(self):
         from src.server import _TOOL_DEFINITIONS
 
-        assert len(_TOOL_DEFINITIONS) == 249, (
-            f"Expected 249 tools in main server, got {len(_TOOL_DEFINITIONS)}"
+        assert len(_TOOL_DEFINITIONS) == 250, (
+            f"Expected 250 tools in main server, got {len(_TOOL_DEFINITIONS)}"
         )
