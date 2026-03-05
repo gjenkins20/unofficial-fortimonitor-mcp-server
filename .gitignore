@@ -46,6 +46,9 @@ nul
 # Agent configuration (internal development)
 agents/
 
+# Marketing workspace (private)
+marketing/
+
 # Knowledge layer data
 data/vectordb/
 
@@ -57,7 +60,8 @@ data/vectordb/
 .DS_Store
 
 # Claude Code
-.claude/
+.claude/*
+!.claude/agents/
 CLAUDE.md
 
 # Crawl/schema data
