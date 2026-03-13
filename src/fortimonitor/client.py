@@ -1,4 +1,8 @@
-"""FortiMonitor API client implementation."""
+"""FortiMonitor API client implementation.
+
+Copyright (c) 2026 Gregori Jenkins
+https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server
+"""
 
 import logging
 import time
@@ -85,7 +89,11 @@ class FortiMonitorClient:
 
         # Set default headers
         self.session.headers.update(
-            {"Content-Type": "application/json", "Accept": "application/json"}
+            {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "User-Agent": "unofficial-fortimonitor-mcp/0.1.0 (https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server)",
+            }
         )
 
     def _request(

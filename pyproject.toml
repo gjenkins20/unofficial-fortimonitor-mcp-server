@@ -10,8 +10,14 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-    {name = "Gregori Jenkins"}
+    {name = "Gregori Jenkins", email = "gjenkins20@gmail.com"}
 ]
+
+[project.urls]
+Homepage = "https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server"
+Repository = "https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server"
+Issues = "https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server/issues"
+Documentation = "https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server#readme"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",

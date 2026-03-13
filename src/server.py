@@ -1,4 +1,8 @@
-"""Main MCP server implementation for FortiMonitor."""
+"""Main MCP server implementation for FortiMonitor.
+
+Copyright (c) 2026 Gregori Jenkins
+https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server
+"""
 
 import logging
 import asyncio
@@ -387,7 +391,8 @@ class FortiMonitorMCPServer:
 
         logger.info(
             f"Initialized {_settings.mcp_server_name} v{_settings.mcp_server_version} "
-            f"with {len(_TOOL_DEFINITIONS)} tools"
+            f"with {len(_TOOL_DEFINITIONS)} tools "
+            f"(by Gregori Jenkins — github.com/gjenkins20)"
         )
 
     def _setup_handlers(self):

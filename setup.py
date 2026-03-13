@@ -14,6 +14,13 @@ setup(
     version="0.1.0",
     description="Unofficial community MCP server for FortiMonitor/Panopta v2 API integration",
     author="Gregori Jenkins",
+    author_email="gjenkins20@gmail.com",
+    url="https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server",
+    project_urls={
+        "Homepage": "https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server",
+        "Repository": "https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server",
+        "Issues": "https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server/issues",
+    },
     packages=find_packages(),
     package_dir={"": "."},
     python_requires=">=3.9",
