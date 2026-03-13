@@ -35,11 +35,17 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 # =============================================================================
 FROM python:3.11-slim
 
-# Labels
+# Labels — OCI metadata for Docker Hub and GHCR discoverability
 LABEL org.opencontainers.image.title="Unofficial FortiMonitor MCP Server"
-LABEL org.opencontainers.image.description="Model Context Protocol server for FortiMonitor/Panopta integration"
+LABEL org.opencontainers.image.description="Model Context Protocol server for FortiMonitor/Panopta monitoring API. Connects AI assistants to FortiMonitor for infrastructure monitoring, alerting, and management."
 LABEL org.opencontainers.image.version="2.0.20260219"
 LABEL org.opencontainers.image.authors="gjenkins20@gmail.com"
+LABEL org.opencontainers.image.url="https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server"
+LABEL org.opencontainers.image.source="https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server"
+LABEL org.opencontainers.image.documentation="https://github.com/gjenkins20/unofficial-fortimonitor-mcp-server#readme"
+LABEL org.opencontainers.image.vendor="gjenkins20"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.base.name="docker.io/library/python:3.11-slim"
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
