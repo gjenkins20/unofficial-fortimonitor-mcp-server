@@ -29,6 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "mcp>=0.9.0",
+    "pyjwt>=2.12.0",
     "requests>=2.31.0",
     "httpx>=0.25.0",
     "python-dotenv>=1.0.0",

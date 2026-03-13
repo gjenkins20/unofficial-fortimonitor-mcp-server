@@ -1,5 +1,6 @@
 # MCP and Core Dependencies
 mcp>=0.9.0
+pyjwt>=2.12.0
 
 # HTTP and API
 requests>=2.31.0
