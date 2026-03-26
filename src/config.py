@@ -77,6 +77,12 @@ class Settings(BaseSettings):
         description="Path to the YAML file defining documentation sources",
     )
 
+    # License Entitlements (optional, for utilization reporting)
+    license_entitlements: Optional[str] = Field(
+        default=None,
+        description='JSON object mapping addon textkeys to licensed counts, e.g. {"instance.basic": 100, "instance.advanced": 50}',
+    )
+
     @property
     def api_base_url(self) -> str:
         """Get API base URL as string."""

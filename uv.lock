@@ -950,73 +950,6 @@ wheels = [
 ]
 
 [[package]]
-name = "fortimonitor-mcp-server"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "httpx" },
-    { name = "lancedb" },
-    { name = "mcp" },
-    { name = "numpy" },
-    { name = "pillow" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "pymupdf" },
-    { name = "pymupdf4llm" },
-    { name = "python-dateutil" },
-    { name = "python-dotenv" },
-    { name = "pyyaml" },
-    { name = "requests" },
-    { name = "sentence-transformers" },
-    { name = "structlog" },
-    { name = "torch" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "black" },
-    { name = "flake8" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "types-requests" },
-]
-knowledge = [
-    { name = "beautifulsoup4" },
-    { name = "crawl4ai" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "beautifulsoup4", marker = "extra == 'knowledge'", specifier = ">=4.12.0" },
-    { name = "black", marker = "extra == 'dev'", specifier = ">=23.12.0" },
-    { name = "crawl4ai", marker = "extra == 'knowledge'", specifier = ">=0.3.0" },
-    { name = "flake8", marker = "extra == 'dev'", specifier = ">=6.1.0" },
-    { name = "httpx", specifier = ">=0.25.0" },
-    { name = "lancedb", specifier = ">=0.6.0,<0.26" },
-    { name = "mcp", specifier = ">=0.9.0" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
-    { name = "numpy", specifier = "<2" },
-    { name = "pillow", specifier = ">=10.0.0" },
-    { name = "pydantic", specifier = ">=2.5.0" },
-    { name = "pydantic-settings", specifier = ">=2.1.0" },
-    { name = "pymupdf", specifier = ">=1.24.0" },
-    { name = "pymupdf4llm", specifier = ">=0.0.17" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1.0" },
-    { name = "python-dateutil", specifier = ">=2.8.2" },
-    { name = "python-dotenv", specifier = ">=1.0.0" },
-    { name = "pyyaml", specifier = ">=6.0" },
-    { name = "requests", specifier = ">=2.31.0" },
-    { name = "sentence-transformers", specifier = ">=3.0.0" },
-    { name = "structlog", specifier = ">=23.2.0" },
-    { name = "torch", specifier = ">=2.0.0,<2.3" },
-    { name = "types-requests", marker = "extra == 'dev'", specifier = ">=2.31.0" },
-]
-
-[[package]]
 name = "frozenlist"
 version = "1.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -4232,6 +4165,73 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/55/e3/70399cb7dd41c10ac53367ae42139cf4b1ca5f36bb3dc6c9d33acdb43655/typing_inspection-0.4.2.tar.gz", hash = "sha256:ba561c48a67c5958007083d386c3295464928b01faa735ab8547c5692e87f464", size = 75949 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/dc/9b/47798a6c91d8bdb567fe2698fe81e0c6b7cb7ef4d13da4114b41d239f65d/typing_inspection-0.4.2-py3-none-any.whl", hash = "sha256:4ed1cacbdc298c220f1bd249ed5287caa16f34d44ef4e9c3d0cbad5b521545e7", size = 14611 },
+]
+
+[[package]]
+name = "unofficial-fortimonitor-mcp-server"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "httpx" },
+    { name = "lancedb" },
+    { name = "mcp" },
+    { name = "numpy" },
+    { name = "pillow" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "pymupdf" },
+    { name = "pymupdf4llm" },
+    { name = "python-dateutil" },
+    { name = "python-dotenv" },
+    { name = "pyyaml" },
+    { name = "requests" },
+    { name = "sentence-transformers" },
+    { name = "structlog" },
+    { name = "torch" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "black" },
+    { name = "flake8" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "types-requests" },
+]
+knowledge = [
+    { name = "beautifulsoup4" },
+    { name = "crawl4ai" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "beautifulsoup4", marker = "extra == 'knowledge'", specifier = ">=4.12.0" },
+    { name = "black", marker = "extra == 'dev'", specifier = ">=23.12.0" },
+    { name = "crawl4ai", marker = "extra == 'knowledge'", specifier = ">=0.3.0" },
+    { name = "flake8", marker = "extra == 'dev'", specifier = ">=6.1.0" },
+    { name = "httpx", specifier = ">=0.25.0" },
+    { name = "lancedb", specifier = ">=0.6.0,<0.26" },
+    { name = "mcp", specifier = ">=0.9.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
+    { name = "numpy", specifier = "<2" },
+    { name = "pillow", specifier = ">=10.0.0" },
+    { name = "pydantic", specifier = ">=2.5.0" },
+    { name = "pydantic-settings", specifier = ">=2.1.0" },
+    { name = "pymupdf", specifier = ">=1.24.0" },
+    { name = "pymupdf4llm", specifier = ">=0.0.17" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21.0" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1.0" },
+    { name = "python-dateutil", specifier = ">=2.8.2" },
+    { name = "python-dotenv", specifier = ">=1.0.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "requests", specifier = ">=2.31.0" },
+    { name = "sentence-transformers", specifier = ">=3.0.0" },
+    { name = "structlog", specifier = ">=23.2.0" },
+    { name = "torch", specifier = ">=2.0.0,<2.3" },
+    { name = "types-requests", marker = "extra == 'dev'", specifier = ">=2.31.0" },
 ]
 
 [[package]]
