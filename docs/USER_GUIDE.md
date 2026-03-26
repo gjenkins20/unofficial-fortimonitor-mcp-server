@@ -6,7 +6,8 @@
 2. [Configuration](#2-configuration)
 3. [Tool Reference Catalog](#3-tool-reference-catalog)
 4. [Common Workflows](#4-common-workflows)
-5. [Troubleshooting](#5-troubleshooting)
+5. [AI-Powered Workflows](#5-ai-powered-workflows)
+6. [Troubleshooting](#6-troubleshooting)
 
 ---
 
@@ -763,9 +764,166 @@ For compliance and SLA reporting:
 
 ---
 
-## 5. Troubleshooting
+## 5. AI-Powered Workflows
 
-### 5.1 API Key Issues
+The workflows in Section 4 show how to use individual tools step by step. This section is different. It shows what becomes possible when an AI is composing those tools on your behalf -- workflows where the AI decides which tools to call, correlates the results, and delivers insight you did not have to manually assemble.
+
+These are not new tools. They use the same 249 tools already in the server. The difference is the prompt.
+
+### 5.1 Scheduled Morning Situation Report
+
+**The problem:** You start your day by checking dashboards, scanning for overnight outages, reviewing maintenance windows, and building a mental picture of what needs attention. This takes 10-15 minutes.
+
+**The AI workflow:** A scheduled Claude Code agent connects to your FortiMonitor MCP server every morning and delivers a prioritized briefing.
+
+**How to set it up with Claude Code:**
+
+Use Claude Code's `/schedule` command to create a recurring trigger:
+
+```
+/schedule create --cron "0 8 * * 1-5" --name "morning-sitrep"
+```
+
+With a prompt like:
+
+> Connect to the FortiMonitor MCP server and give me a morning situation report.
+>
+> 1. Call `list_active_outages` to get all current outages. Group them by severity (critical first, then warning, then info). For each, note whether it has been acknowledged, how long it has been active, and which server is affected.
+> 2. Call `list_active_or_pending_maintenance` to see what maintenance is in progress or coming up today.
+> 3. Call `get_top_alerting_servers` to identify the noisiest servers over the past week.
+> 4. Call `get_outage_statistics` with `days: 1` to see what happened overnight.
+> 5. Synthesize this into a prioritized briefing: what needs immediate attention, what is being handled, and what is informational. Flag anything that looks unusual -- for example, a server that is not normally in the top alerters appearing there, or a critical outage that has been active for more than an hour without acknowledgment.
+>
+> Post the result to #ops-morning in Slack.
+
+**What the AI adds that a static script cannot:** It notices patterns. A cron job can list outages, but the AI will flag that three servers in the same group went down within minutes of each other, or that an outage started right after a maintenance window ended on an upstream dependency.
+
+### 5.2 Conversational Root Cause Investigation
+
+**The problem:** A server is down. You need to check the outage details, review the timeline, look at pre-outage metrics, check if related servers are affected, and see if any recent maintenance could have caused it. Each of these is a separate tool call, and you need to mentally correlate the results.
+
+**The AI workflow:** You describe the problem in plain English. The AI investigates.
+
+**Example conversation:**
+
+> **You:** web-prod-03 is down. What happened?
+>
+> **AI's internal process:**
+> 1. Calls `get_servers` with `name: "web-prod-03"` to get the server ID
+> 2. Calls `check_server_health` to confirm current status
+> 3. Calls `list_active_outages` filtered to that server to get the outage ID and severity
+> 4. Calls `get_outage_details` for the full timeline and message
+> 5. Calls `list_outage_logs` to see the sequence of events
+> 6. Calls `get_outage_preoutage_graph` to see what metrics looked like before the outage
+> 7. Calls `get_server_details` to find which server group this server belongs to
+> 8. Calls `list_active_outages` again, scanning for other servers in the same group
+> 9. Calls `get_server_maintenance_schedules` to check if any recent maintenance could be related
+>
+> **AI's response:** "web-prod-03 has been in a critical outage since 03:42 UTC -- the HTTP check is returning connection timeouts. Looking at the pre-outage metrics, CPU was normal but memory usage climbed steadily from 60% to 94% over the two hours before the outage. Two other servers in the Production Web group (web-prod-01 and web-prod-02) are healthy, so this is isolated to -03. There was a maintenance window on the upstream load balancer yesterday evening, but it ended 6 hours before this outage started, so it is probably unrelated. This looks like a memory leak on web-prod-03 specifically."
+
+**What the AI adds:** You asked one question and got a correlated investigation spanning 9 API calls. A human doing this manually would need to navigate to each section of the FortiMonitor UI and hold the context in their head. The AI does it in seconds and presents a narrative.
+
+### 5.3 Natural Language Bulk Operations
+
+**The problem:** You need to perform the same action across many servers or outages, but the criteria are not a simple filter -- they require judgment.
+
+**Example prompts and what the AI does:**
+
+> **You:** "Acknowledge all warning-level outages on the US-East group and add a note that we are investigating the upstream switch."
+>
+> **AI's process:**
+> 1. Calls `list_server_groups` to find the US-East group ID
+> 2. Calls `list_active_outages` and filters to warning-level outages on servers in that group
+> 3. Calls `bulk_acknowledge_outages` with the collected outage IDs and the note
+> 4. Reports back: "Acknowledged 7 warning-level outages across 4 servers in the US-East group."
+
+> **You:** "Tag all servers that have had more than 5 outages this month as 'needs-review'."
+>
+> **AI's process:**
+> 1. Calls `get_servers_with_active_outages` and `get_outage_statistics` to identify repeat offenders
+> 2. Calls `search_servers_advanced` cross-referenced with outage history
+> 3. Calls `bulk_add_tags` with `tags: ["needs-review"]` on the qualifying servers
+> 4. Reports back with the list of tagged servers and their outage counts
+
+**What the AI adds:** The criteria ("warning-level on US-East" or "more than 5 outages this month") require multiple lookups and filtering logic. You express intent in English; the AI translates it into the right sequence of API calls.
+
+### 5.4 Maintenance Impact Assessment
+
+**The problem:** Before taking a server down for patching, you need to understand the blast radius -- what depends on this server, who will be notified, and whether anything else is already down that makes this a bad time.
+
+**Example conversation:**
+
+> **You:** "I need to patch db-primary tonight. What is the impact?"
+>
+> **AI's process:**
+> 1. Calls `get_servers` with `name: "db-primary"` to get the server ID and group membership
+> 2. Calls `get_server_details` to see tags, attributes, and current status
+> 3. Calls `list_compound_services` and checks which compound services include this server -- these represent service-level dependencies
+> 4. Calls `list_active_outages` to check if anything else is currently down (bad time for maintenance if the redundant server is already out)
+> 5. Calls `list_notification_schedules` and `get_rotating_contact_active` to identify who will be alerted
+> 6. Calls `list_active_or_pending_maintenance` to check for scheduling conflicts
+>
+> **AI's response:** "db-primary is part of the 'Database Cluster' compound service along with db-replica-01 and db-replica-02. Both replicas are healthy, so taking db-primary down should not affect the compound service availability. There is one pending maintenance window tonight on the network switches (22:00-02:00) -- you may want to avoid overlapping with that. The current on-call is Jane Smith. No active outages on related infrastructure. Recommendation: schedule a 2-hour window starting at 20:00, before the network maintenance begins."
+
+**What the AI adds:** Impact assessment requires cross-referencing 5-6 different data sources (server details, compound services, active outages, maintenance windows, notification schedules). The AI builds a picture that would take a human 10+ minutes of dashboard navigation and presents a recommendation.
+
+### 5.5 Trend Analysis and Noise Reduction
+
+**The problem:** Some servers generate constant low-severity alerts that drown out real issues. You need to identify the noisy ones and tune their thresholds, but the data is spread across outage history, metrics, and server configuration.
+
+**Example conversation:**
+
+> **You:** "Which servers have been the noisiest this month, and what can we do about it?"
+>
+> **AI's process:**
+> 1. Calls `get_top_alerting_servers` with `limit: 20` for the broad picture
+> 2. For the top 5, calls `get_server_outages` to see the pattern -- are these the same alert repeating, or different issues?
+> 3. Calls `get_server_metrics` and `get_agent_resource_metric` with `timescale: "month"` to see if the monitored values are consistently near thresholds
+> 4. Calls `list_server_attributes` to check for existing threshold overrides
+>
+> **AI's response:** "The top 3 noisy servers are all in the 'Legacy App Servers' group:
+> - legacy-app-01: 23 outages this month, all disk usage warnings. Disk sits at 82-84% consistently -- the warning threshold is 80%. Raising it to 90% would eliminate the noise without missing a real issue.
+> - legacy-app-02: 18 outages, mix of CPU and memory. CPU spikes to 75% during batch jobs every 4 hours, triggering the 70% threshold. Consider raising the CPU threshold or excluding the batch window.
+> - legacy-app-03: 12 outages, all HTTP response time warnings. Response time is 1.8-2.1s against a 2s threshold. This one is borderline -- you may want to investigate the app performance rather than raise the threshold."
+
+**What the AI adds:** It does not just list the noisy servers -- it explains *why* they are noisy and proposes specific, different actions for each based on the data. A dashboard shows you the numbers; the AI interprets them.
+
+### 5.6 SLA and Availability Reporting
+
+**The problem:** You need to produce a monthly availability report for stakeholders that includes uptime percentages, mean time to resolution, and a narrative explaining any significant incidents.
+
+**Example conversation:**
+
+> **You:** "Generate the March availability report for the Production Web group."
+>
+> **AI's process:**
+> 1. Calls `list_server_groups` to find the Production Web group
+> 2. Calls `get_servers` filtered to that group to get all member server IDs
+> 3. Calls `generate_availability_report` with `days: 31` for the overall picture
+> 4. Calls `get_server_availability` for each server in the group with the March date range
+> 5. Calls `export_outage_history` to get the raw outage data for the period
+> 6. Calls `get_outage_statistics` with `days: 31` for aggregate metrics
+>
+> **AI's response:** A formatted report with per-server uptime percentages, group average, MTTR calculation from outage data, and a narrative section summarizing the 2 significant incidents that month (what happened, how long they lasted, how they were resolved). Ready to paste into an email or document.
+
+**What the AI adds:** It turns raw monitoring data into a stakeholder-ready narrative. The numbers come from the API; the explanation and formatting come from the AI. This replaces 30-60 minutes of manual report writing each month.
+
+### 5.7 Building Your Own Workflows
+
+These examples are starting points. The FortiMonitor MCP server exposes 249 tools covering servers, outages, metrics, maintenance, contacts, notifications, cloud resources, SNMP, templates, and more. Any workflow you can describe in English, the AI can attempt by composing the right tools.
+
+**Tips for effective prompts:**
+
+- **Be specific about what you want to know**, not which tools to call. Say "what's the blast radius of taking down db-primary?" not "call get_server_details then list_compound_services." The AI will figure out the right tools.
+- **Ask follow-up questions.** The AI retains context within a conversation. After a situation report, you can say "tell me more about that second outage" and it will drill in.
+- **Combine with actions.** Investigation and action in one prompt: "find all unacknowledged critical outages older than 30 minutes and acknowledge them with a note that the overnight team is investigating."
+- **Request a specific format.** "Give me this as a markdown table" or "format this as a Slack message" works because the AI controls the output format, not the MCP server.
+
+---
+
+## 6. Troubleshooting
+
+### 6.1 API Key Issues
 
 **Symptom**: Tools return authentication errors or "401 Unauthorized" responses.
 
@@ -775,7 +933,7 @@ For compliance and SLA reporting:
 - Confirm the API key has not expired in the FortiMonitor dashboard
 - Check that the API key has sufficient permissions for the operations you need
 
-### 5.2 Connection Errors
+### 6.2 Connection Errors
 
 **Symptom**: Tools return connection timeouts or "Connection refused" errors.
 
@@ -785,7 +943,7 @@ For compliance and SLA reporting:
 - If behind a proxy, ensure the proxy allows HTTPS traffic to `api2.panopta.com`
 - Try increasing the timeout if responses are slow
 
-### 5.3 Rate Limiting
+### 6.3 Rate Limiting
 
 **Symptom**: Tools return "429 Too Many Requests" or rate limit errors.
 
@@ -795,7 +953,7 @@ For compliance and SLA reporting:
 - Default is 100 requests per 60 seconds, which is sufficient for most use cases
 - If using bulk operations, prefer `bulk_acknowledge_outages` and `bulk_add_tags` over individual calls
 
-### 5.4 Docker Issues
+### 6.4 Docker Issues
 
 **Symptom**: Container fails to start or MCP client cannot connect.
 
@@ -807,7 +965,7 @@ For compliance and SLA reporting:
 - **Memory issues**: The container is limited to 512 MB. If you see OOM errors, increase the memory limit in `docker-compose.yml`
 - **Environment variables not loaded**: Ensure you are using `docker-compose up` (which reads `.env` automatically), not manual `docker run` commands. If using `docker run`, pass `--env-file .env`
 
-### 5.5 Tool Not Found
+### 6.5 Tool Not Found
 
 **Symptom**: MCP client reports "Unknown tool" errors.
 
@@ -817,7 +975,7 @@ For compliance and SLA reporting:
 - Check server logs for startup errors that may have prevented tool registration
 - Verify the tool name exactly matches the catalog above (tool names are case-sensitive and use underscores)
 
-### 5.6 Empty or Unexpected Responses
+### 6.6 Empty or Unexpected Responses
 
 **Symptom**: Tools return empty data or unexpected formats.
 
@@ -827,7 +985,7 @@ For compliance and SLA reporting:
 - Use the corresponding "get details" or "list" tool after a write operation to verify changes
 - Check that your API key has read access to the requested resources
 
-### 5.7 Server Startup Errors
+### 6.7 Server Startup Errors
 
 **Symptom**: The MCP server fails to start.
 
@@ -838,7 +996,7 @@ For compliance and SLA reporting:
 - Review server logs for specific error messages. Set `LOG_LEVEL=DEBUG` for more detail
 - Ensure no other process is conflicting with the stdio communication
 
-### 5.8 Logging
+### 6.8 Logging
 
 To enable detailed logging for debugging:
 
