@@ -6,6 +6,10 @@ Model Context Protocol (MCP) server for FortiMonitor/Panopta v2 API integration 
 
 **241 tools** across 33 modules providing near-complete coverage of the FortiMonitor v2 API.
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/gjenkins20-unofficial-fortimonitor-mcp-server).
+
 ## Features
 
 - **Server Management** — CRUD, tagging, attributes, DNS flush, path monitoring, logs
