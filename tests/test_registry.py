@@ -52,10 +52,10 @@ class TestRegistryIntegrity:
     """Verify the tool registry loads correctly."""
 
     def test_total_tool_count(self, registry):
-        """All 248 tools are registered (241 original + 7 WebGUI)."""
+        """All 260 tools are registered (249 original + 5 composite + 3 webhook + 3 knowledge)."""
         defns, handlers = registry
-        assert len(defns) >= 248, (
-            f"Expected at least 248 tools, got {len(defns)}"
+        assert len(defns) >= 260, (
+            f"Expected at least 260 tools, got {len(defns)}"
         )
 
     def test_definition_handler_count_match(self, registry):

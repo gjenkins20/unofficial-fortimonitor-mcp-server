@@ -12,7 +12,11 @@ from typing import Any, List
 from mcp.server.models import InitializationOptions
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.types import TextContent, Tool, ServerCapabilities, ToolsCapability
+from mcp.types import (
+    TextContent, Tool, ServerCapabilities, ToolsCapability,
+    Prompt, PromptMessage, GetPromptResult,
+    Resource, ResourcesCapability, PromptsCapability,
+)
 
 from .config import get_settings
 from .fortimonitor.client import FortiMonitorClient
@@ -229,6 +233,24 @@ from .tools.license_utilization import (
     LICENSE_UTILIZATION_HANDLERS,
 )
 
+# Composite operations
+from .tools.composite import (
+    COMPOSITE_TOOL_DEFINITIONS,
+    COMPOSITE_HANDLERS,
+)
+
+# Webhook tools
+from .webhooks.tools import (
+    WEBHOOK_TOOL_DEFINITIONS,
+    WEBHOOK_HANDLERS,
+)
+
+# MCP Prompts
+from .prompts.workflows import PROMPTS, PROMPT_HANDLERS
+
+# MCP Resources
+from .resources.feeds import RESOURCES, RESOURCE_HANDLERS
+
 # Knowledge Layer tools
 from .knowledge.tools.search import (
     KNOWLEDGE_SEARCH_TOOL_DEFINITIONS,
@@ -357,6 +379,10 @@ def _build_registry():
         (ONSIGHT_TOOL_DEFINITIONS, ONSIGHT_HANDLERS),
         # License utilization tools
         (LICENSE_UTILIZATION_TOOL_DEFINITIONS, LICENSE_UTILIZATION_HANDLERS),
+        # Composite operations
+        (COMPOSITE_TOOL_DEFINITIONS, COMPOSITE_HANDLERS),
+        # Webhook tools
+        (WEBHOOK_TOOL_DEFINITIONS, WEBHOOK_HANDLERS),
         # Knowledge Layer tools
         (KNOWLEDGE_SEARCH_TOOL_DEFINITIONS, KNOWLEDGE_SEARCH_HANDLERS),
         (KNOWLEDGE_RETRIEVAL_TOOL_DEFINITIONS, KNOWLEDGE_RETRIEVAL_HANDLERS),
@@ -425,15 +451,83 @@ class FortiMonitorMCPServer:
 
             raise ValueError(f"Unknown tool: {name}")
 
+        # ── MCP Prompts ──────────────────────────────────────────────
+
+        @self.server.list_prompts()
+        async def list_prompts() -> List[Prompt]:
+            """List available prompt templates."""
+            return list(PROMPTS.values())
+
+        @self.server.get_prompt()
+        async def get_prompt(name: str, arguments: dict | None = None) -> GetPromptResult:
+            """Get a prompt by name with populated arguments."""
+            prompt = PROMPTS.get(name)
+            if not prompt:
+                raise ValueError(f"Unknown prompt: {name}")
+
+            handler = PROMPT_HANDLERS.get(name)
+            if not handler:
+                raise ValueError(f"No handler for prompt: {name}")
+
+            messages = handler(arguments or {})
+            return GetPromptResult(
+                description=prompt.description,
+                messages=messages,
+            )
+
+        # ── MCP Resources ────────────────────────────────────────────
+
+        @self.server.list_resources()
+        async def list_resources() -> List[Resource]:
+            """List available data feed resources."""
+            return RESOURCES
+
+        @self.server.read_resource()
+        async def read_resource(uri: str) -> str:
+            """Read a resource by URI."""
+            # Normalize URI
+            uri_str = str(uri)
+
+            handler = RESOURCE_HANDLERS.get(uri_str)
+            if not handler:
+                raise ValueError(f"Unknown resource: {uri_str}")
+
+            # Ensure client is initialized
+            if not self.client:
+                self.client = FortiMonitorClient()
+
+            return await handler(self.client)
+
+    def _start_webhook_receiver(self):
+        """Start the embedded webhook receiver if configured."""
+        webhook_port = int(getattr(_settings, "webhook_port", 0) or 0)
+        if webhook_port:
+            from .webhooks.receiver import WebhookReceiver
+            webhook_secret = getattr(_settings, "webhook_secret", None) or None
+            self._webhook_receiver = WebhookReceiver(
+                port=webhook_port, secret=webhook_secret
+            )
+            self._webhook_receiver.start()
+        else:
+            self._webhook_receiver = None
+
+    def _stop_webhook_receiver(self):
+        """Stop the webhook receiver if running."""
+        if hasattr(self, "_webhook_receiver") and self._webhook_receiver:
+            self._webhook_receiver.stop()
+
     async def run(self):
         """Run the MCP server."""
         logger.info("Starting FortiMonitor MCP server...")
+        self._start_webhook_receiver()
 
         try:
             async with stdio_server() as (read_stream, write_stream):
                 # Create capabilities using proper MCP types
                 capabilities = ServerCapabilities(
-                    tools=ToolsCapability(listChanged=False)
+                    tools=ToolsCapability(listChanged=False),
+                    prompts=PromptsCapability(listChanged=False),
+                    resources=ResourcesCapability(subscribe=False, listChanged=False),
                 )
 
                 await self.server.run(
@@ -451,6 +545,7 @@ class FortiMonitorMCPServer:
             logger.exception("Server error")
             raise
         finally:
+            self._stop_webhook_receiver()
             if self.client:
                 self.client.close()
             logger.info("FortiMonitor MCP server stopped")

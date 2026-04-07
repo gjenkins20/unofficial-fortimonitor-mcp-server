@@ -83,6 +83,16 @@ class Settings(BaseSettings):
         description='JSON object mapping addon textkeys to licensed counts, e.g. {"instance.basic": 100, "instance.advanced": 50}',
     )
 
+    # Webhook Receiver Configuration
+    webhook_port: int = Field(
+        default=0,
+        description="Port for embedded webhook receiver (0 = disabled)",
+    )
+    webhook_secret: Optional[str] = Field(
+        default=None,
+        description="Optional secret for validating incoming webhooks (X-Webhook-Secret header)",
+    )
+
     @property
     def api_base_url(self) -> str:
         """Get API base URL as string."""
