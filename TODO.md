@@ -102,6 +102,120 @@ Project tasks and planned work for FortiMonitor MCP Server.
 
 ---
 
+## Next Version — New Features (implemented 2026-04-07)
+
+### MCP Prompts — 7 Workflow Templates
+
+Pre-built prompt templates that appear in Claude Desktop's prompt selector UI.
+
+- [ ] **Try: Morning Situation Report**
+  - In Claude Desktop, open the prompt selector (attach icon or `/` menu) and choose "morning-situation-report"
+  - Optional argument: `limit` (default 10) to control items per section
+  - The prompt instructs Claude to call `get_servers_with_active_outages`, `list_active_or_pending_maintenance`, `get_system_health_summary`, `get_top_alerting_servers`, and `get_outage_statistics`, then synthesize a prioritized briefing
+
+- [ ] **Try: Investigate Outage**
+  - Select "investigate-outage" from the prompt selector
+  - Required argument: `server_id` — the server to investigate
+  - Triggers a deep investigation: server details, health, outage history, metrics, maintenance, network services
+
+- [ ] **Try: Capacity Planning Review**
+  - Select "capacity-planning-review"
+  - Optional argument: `server_group_id` to scope to a specific group
+  - Reviews resource utilization trends and threshold proximity across your fleet
+
+- [ ] **Try: Change Impact Assessment**
+  - Select "change-impact-assessment"
+  - Required argument: `server_id` — the server planned for maintenance
+  - Assesses dependencies, compound services, notification groups, and active outages
+
+- [ ] **Try: Weekly Executive Summary**
+  - Select "weekly-executive-summary"
+  - Optional argument: `days` (default 7)
+  - Generates outage count, MTTR, availability %, top offenders, and trend analysis
+
+- [ ] **Try: Alert Noise Audit**
+  - Select "alert-noise-audit"
+  - Optional argument: `days` (default 7)
+  - Identifies flapping servers, high-volume alerts, and suggests tuning
+
+- [ ] **Try: Monitoring Coverage Check**
+  - Select "monitoring-coverage-check"
+  - Optional argument: `server_group_id` to scope
+  - Finds servers with missing checks, no notification schedules, or no templates
+
+### Composite Operations — 5 Smart Tools
+
+Higher-level tools that chain multiple API calls. Usable via Claude Desktop or Claude Code like any other tool.
+
+- [ ] **Try: `investigate_server`**
+  - Call with `server_id` — returns health, outages, metrics, maintenance, and network services in one report
+  - Example in Claude: "Investigate server 12345"
+
+- [ ] **Try: `compare_servers`**
+  - Call with `server_id_1` and `server_id_2` — side-by-side comparison of config, health, services, outages
+  - Example: "Compare servers 100 and 200"
+
+- [ ] **Try: `audit_monitoring_coverage`**
+  - Call with optional `server_group_id` and `limit` — scans for servers missing network services
+  - Example: "Audit monitoring coverage for all servers"
+
+- [ ] **Try: `generate_incident_timeline`**
+  - Call with `outage_id` — builds chronological narrative from outage events, notes, and server details
+  - Example: "Generate a timeline for outage 5678"
+
+- [ ] **Try: `find_flapping_servers`**
+  - Call with optional `min_outage_count` (default 3) and `limit` (default 20)
+  - Example: "Find flapping servers with more than 5 outages"
+
+### MCP Resources — 4 Live Data Feeds
+
+Resources are read-only data endpoints. In Claude Desktop they may appear under the resources panel (client support varies).
+
+- [ ] **Try: Read `fortimonitor://outages/active`**
+  - Returns current active outages as JSON, refreshed on each read
+
+- [ ] **Try: Read `fortimonitor://health/summary`**
+  - Returns aggregate health: total servers, active outage count, servers up
+
+- [ ] **Try: Read `fortimonitor://maintenance/upcoming`**
+  - Returns active and pending maintenance windows
+
+- [ ] **Try: Read `fortimonitor://alerts/recent`**
+  - Returns the latest 25 outages across all servers
+
+### Webhook Receiver — Event-Driven Alerts
+
+An embedded HTTP listener that receives FortiMonitor outbound webhooks. Disabled by default.
+
+- [ ] **Enable the webhook receiver**
+  - Set `WEBHOOK_PORT=8765` in your `.env` file (or environment)
+  - Optionally set `WEBHOOK_SECRET=your-secret` for validation
+  - Restart the MCP server — the receiver starts automatically on the configured port
+  - Health check: `curl http://localhost:8765/health`
+
+- [ ] **Configure FortiMonitor to send webhooks**
+  - In FortiMonitor, set up a webhook notification pointing to `http://your-host:8765/`
+  - If using `WEBHOOK_SECRET`, configure FortiMonitor to send it as the `X-Webhook-Secret` header
+
+- [ ] **Query webhook events**
+  - Use `list_webhook_events` tool to see recent events (optional filter by `event_type`)
+  - Use `get_webhook_status` to check receiver status and event count
+  - Use `clear_webhook_events` to clear stored events
+  - Event types: `outage_started`, `outage_cleared`, `outage_update`, `escalation`, `maintenance`
+
+### Versioning & Release Process
+
+- [ ] **Review CHANGELOG.md**
+  - Located at project root — retroactive v0.1.0 entry plus [Unreleased] section
+  - Follows Keep a Changelog format
+
+- [ ] **Decide version number for this release**
+  - Current: 0.1.0. Options: v0.2.0 (iterating) or v1.0.0 (production-ready signal)
+  - Update `pyproject.toml` line 7 and `src/config.py` line 30 when decided
+  - Tag with `git tag vX.Y.Z` and push — CI will build versioned Docker images automatically
+
+---
+
 ## Up Next — Knowledge Layer Quality (v2.1)
 
 - [ ] **Develop a plan to improve knowledge layer answer quality** <!-- PLANE:FMN-4 -->
@@ -123,11 +237,11 @@ These are planned enhancements beyond the initial v2.0 release, from Section 13 
 - [ ] **Cross-product docs** <!-- PLANE:FMN-7 -->
   - Expand to FortiGate, FortiManager, and other integrated Fortinet products
 
-- [ ] **Knowledge graph** <!-- PLANE:FMN-8 -->
-  - Entity-relation graphs linking FortiMonitor concepts to documentation for graph-enhanced retrieval
+- [ ] ~~**Knowledge graph**~~ <!-- PLANE:FMN-8 -->
+  - REPLACED by MCP Resources (live data feeds) — achieves connected-data goal more practically
 
-- [ ] **Conversational memory** <!-- PLANE:FMN-9 -->
-  - Cache Q&A pairs to improve future responses without re-searching
+- [ ] ~~**Conversational memory**~~ <!-- PLANE:FMN-9 -->
+  - DROPPED — LLM clients handle conversation context natively
 
 - [ ] **Multi-version support** <!-- PLANE:FMN-10 -->
   - Query docs for specific versions (e.g., "What changed in 25.3?" vs "How does this work in 26.1?")
@@ -158,7 +272,13 @@ These are planned enhancements beyond the initial v2.0 release, from Section 13 
 - [x] WebGUI static knowledge layer — 7 MCP tools (248 total) <!-- PLANE:PENDING -->
 - [x] WebGUI walkthrough tools & screenshot cropping — 3 MCP tools (251 total) <!-- PLANE:PENDING -->
 - [x] Extract WebGUI into standalone MCP server (249 + 10 tools) <!-- PLANE:PENDING -->
+- [x] MCP Prompts — 7 workflow templates (morning report, investigate, capacity, impact, summary, noise, coverage) <!-- PLANE:PENDING -->
+- [x] Composite Operations — 5 smart tools (investigate_server, compare_servers, audit_monitoring_coverage, generate_incident_timeline, find_flapping_servers) <!-- PLANE:PENDING -->
+- [x] MCP Resources — 4 live data feeds (active outages, health summary, upcoming maintenance, recent alerts) <!-- PLANE:PENDING -->
+- [x] Webhook Receiver — embedded HTTP listener with event store and 3 query tools <!-- PLANE:PENDING -->
+- [x] CHANGELOG.md — retroactive v0.1.0 + unreleased section <!-- PLANE:PENDING -->
+- [x] Tests: 446 passing (was ~310) <!-- PLANE:PENDING -->
 
 ---
 
-*Last updated: 2026-03-13*
+*Last updated: 2026-04-07*
