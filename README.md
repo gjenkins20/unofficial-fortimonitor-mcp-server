@@ -151,17 +151,20 @@ Then add to your Claude Desktop config:
 {
   "mcpServers": {
     "fortimonitor": {
-      "command": "python",
-      "args": ["-m", "src.server"],
-      "cwd": "/path/to/unofficial-fortimonitor-mcp-server",
+      "command": "/path/to/unofficial-fortimonitor-mcp-server/.venv/bin/unofficial-fortimonitor-mcp",
+      "args": [],
       "env": {
+        "FORTIMONITOR_API_KEY": "your_key",
         "FORTIMONITOR_BASE_URL": "https://api2.panopta.com/v2",
-        "FORTIMONITOR_API_KEY": "your_key"
+        "PYTHONPATH": "/path/to/unofficial-fortimonitor-mcp-server",
+        "ENABLE_SCHEMA_CACHE": "false"
       }
     }
   }
 }
 ```
+
+> **Note:** Claude Desktop does not reliably set `cwd`, so use the full path to the installed entrypoint script and set `PYTHONPATH` explicitly. Set `ENABLE_SCHEMA_CACHE=false` to avoid `[Errno 30] Read-only file system` errors when the server cannot write to the default `cache/` directory. Alternatively, set `SCHEMA_CACHE_DIR` to an absolute writable path to keep caching enabled.
 
 ## API Documentation
 

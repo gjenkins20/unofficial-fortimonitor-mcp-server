@@ -246,6 +246,12 @@ These are planned enhancements beyond the initial v2.0 release, from Section 13 
 - [ ] **Multi-version support** <!-- PLANE:FMN-10 -->
   - Query docs for specific versions (e.g., "What changed in 25.3?" vs "How does this work in 26.1?")
 
+- [ ] **MCP Elicitation support** <!-- PLANE:PENDING -->
+  - The MCP spec includes `elicitation/create` for server-initiated user input during tool execution
+  - Would enable true interactive forms (dropdowns, confirmations) driven by the server
+  - Depends on Claude Desktop client support maturing
+  - Evaluate when protocol support is stable; would replace or augment the guided sessions pattern
+
 - [ ] **Ollama integration** <!-- PLANE:FMN-11 -->
   - Leverage local Ollama setup for higher-quality embeddings and re-ranking
 

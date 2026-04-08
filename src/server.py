@@ -245,6 +245,12 @@ from .webhooks.tools import (
     WEBHOOK_HANDLERS,
 )
 
+# Guided sessions
+from .tools.guided_sessions import (
+    GUIDED_SESSION_TOOL_DEFINITIONS,
+    GUIDED_SESSION_HANDLERS,
+)
+
 # MCP Prompts
 from .prompts.workflows import PROMPTS, PROMPT_HANDLERS
 
@@ -383,6 +389,8 @@ def _build_registry():
         (COMPOSITE_TOOL_DEFINITIONS, COMPOSITE_HANDLERS),
         # Webhook tools
         (WEBHOOK_TOOL_DEFINITIONS, WEBHOOK_HANDLERS),
+        # Guided sessions
+        (GUIDED_SESSION_TOOL_DEFINITIONS, GUIDED_SESSION_HANDLERS),
         # Knowledge Layer tools
         (KNOWLEDGE_SEARCH_TOOL_DEFINITIONS, KNOWLEDGE_SEARCH_HANDLERS),
         (KNOWLEDGE_RETRIEVAL_TOOL_DEFINITIONS, KNOWLEDGE_RETRIEVAL_HANDLERS),

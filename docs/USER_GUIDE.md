@@ -132,13 +132,20 @@ In your Claude Desktop configuration, add:
 {
   "mcpServers": {
     "fortimonitor": {
-      "command": "python",
-      "args": ["-m", "src.server"],
-      "cwd": "/path/to/unofficial-fortimonitor-mcp-server"
+      "command": "/path/to/unofficial-fortimonitor-mcp-server/venv/bin/unofficial-fortimonitor-mcp",
+      "args": [],
+      "env": {
+        "FORTIMONITOR_API_KEY": "your_key",
+        "FORTIMONITOR_BASE_URL": "https://api2.panopta.com/v2",
+        "PYTHONPATH": "/path/to/unofficial-fortimonitor-mcp-server",
+        "ENABLE_SCHEMA_CACHE": "false"
+      }
     }
   }
 }
 ```
+
+> **Important:** Claude Desktop does not reliably set `cwd`, so use the full absolute path to the installed entrypoint script and set `PYTHONPATH` explicitly. Set `ENABLE_SCHEMA_CACHE=false` to prevent `[Errno 30] Read-only file system` errors caused by the server attempting to write to a `cache/` directory in a non-writable location. If you want caching enabled, set `SCHEMA_CACHE_DIR` to an absolute writable path instead (e.g., `/path/to/unofficial-fortimonitor-mcp-server/cache/schemas`).
 
 ### 1.4 Updating
 
@@ -996,7 +1003,18 @@ These examples are starting points. The FortiMonitor MCP server exposes 249 tool
 - Review server logs for specific error messages. Set `LOG_LEVEL=DEBUG` for more detail
 - Ensure no other process is conflicting with the stdio communication
 
-### 6.8 Logging
+### 6.8 Read-Only File System Error (Schema Cache)
+
+**Symptom**: Tools fail with `[Errno 30] Read-only file system: 'cache'`.
+
+**Cause**: The server tries to write schema cache files to a `cache/` directory relative to its working directory. When launched by Claude Desktop (which does not set `cwd` to the project directory), the working directory may be a read-only system location like `/` or `/Applications/`.
+
+**Solutions**:
+- **Disable schema caching** by setting `ENABLE_SCHEMA_CACHE=false` in your Claude Desktop config's `env` block. This is the simplest fix and has no impact on functionality (schemas are re-fetched from the API on each startup instead of being cached to disk).
+- **Set an absolute cache path** by setting `SCHEMA_CACHE_DIR` to a writable absolute path (e.g., `/Users/yourname/unofficial-fortimonitor-mcp-server/cache/schemas`). This preserves caching while avoiding the read-only filesystem.
+- **Docker users** are unaffected since the container has its own writable filesystem.
+
+### 6.9 Logging
 
 To enable detailed logging for debugging:
 
