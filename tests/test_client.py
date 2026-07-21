@@ -99,6 +99,107 @@ class TestFortiMonitorClient:
         assert server.name == "production-web-01"
         assert server.fqdn == "web01.example.com"
 
+    # ------------------------------------------------------------------
+    # update_server: must resend the API's required fields (name, fqdn,
+    # server_group) on every PUT, since PUT /server/{id} is a full-object
+    # update. Regression coverage for FMN-294.
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _server_get_response(server_group="https://api2.panopta.com/v2/server_group/920634"):
+        """Mock GET /server/{id} response used by update_server's read step."""
+        resp = Mock()
+        resp.status_code = 200
+        resp.text = "{}"  # non-empty so _request parses JSON
+        resp.json.return_value = {
+            "url": "https://api2.panopta.com/v2/server/123",
+            "name": "old-name",
+            "fqdn": "web01.example.com",
+            "server_group": server_group,
+            "status": "active",
+        }
+        resp.raise_for_status = Mock()
+        return resp
+
+    @staticmethod
+    def _put_204_response():
+        """Mock empty 204 response for the PUT step."""
+        resp = Mock()
+        resp.status_code = 204
+        resp.text = ""
+        resp.raise_for_status = Mock()
+        return resp
+
+    @patch("requests.Session.request")
+    def test_update_server_sends_required_fields(self, mock_request, client):
+        """A name change must include name, fqdn and server_group in the PUT body."""
+        mock_request.side_effect = [self._server_get_response(), self._put_204_response()]
+
+        client.update_server(123, name="new-name")
+
+        assert mock_request.call_count == 2
+        get_call, put_call = mock_request.call_args_list
+        assert get_call.kwargs["method"] == "GET"
+        assert put_call.kwargs["method"] == "PUT"
+        assert put_call.kwargs["url"].endswith("/server/123")
+        assert put_call.kwargs["json"] == {
+            "name": "new-name",
+            "fqdn": "web01.example.com",
+            "server_group": "https://api2.panopta.com/v2/server_group/920634",
+        }
+
+    @patch("requests.Session.request")
+    def test_update_server_name_only_preserves_fqdn_and_group(self, mock_request, client):
+        """Caller supplies only name; fqdn/server_group are pulled from current state."""
+        mock_request.side_effect = [self._server_get_response(), self._put_204_response()]
+
+        client.update_server(123, name="renamed")
+
+        body = mock_request.call_args_list[1].kwargs["json"]
+        assert body["fqdn"] == "web01.example.com"
+        assert body["server_group"] == "https://api2.panopta.com/v2/server_group/920634"
+
+    @patch("requests.Session.request")
+    def test_update_server_defaults_name_when_only_description(self, mock_request, client):
+        """Updating only the description still sends the current name (required field)."""
+        mock_request.side_effect = [self._server_get_response(), self._put_204_response()]
+
+        client.update_server(123, description="new description")
+
+        body = mock_request.call_args_list[1].kwargs["json"]
+        assert body["name"] == "old-name"
+        assert body["description"] == "new description"
+        assert body["fqdn"] == "web01.example.com"
+        assert body["server_group"] == "https://api2.panopta.com/v2/server_group/920634"
+
+    @patch("requests.Session.request")
+    def test_update_server_missing_server_group_raises(self, mock_request, client):
+        """If the current server has no server_group, fail with a clear error and no PUT."""
+        mock_request.side_effect = [self._server_get_response(server_group=None)]
+
+        with pytest.raises(ValueError, match="fqdn/server_group"):
+            client.update_server(123, name="new-name")
+
+        # Only the GET happened; no PUT was attempted.
+        assert mock_request.call_count == 1
+        assert mock_request.call_args_list[0].kwargs["method"] == "GET"
+
+    @patch("requests.Session.request")
+    def test_update_server_invalid_status_raises(self, mock_request, client):
+        """Invalid status fails fast, before any network call."""
+        with pytest.raises(ValueError, match="Status must be one of"):
+            client.update_server(123, status="bogus")
+
+        mock_request.assert_not_called()
+
+    @patch("requests.Session.request")
+    def test_update_server_requires_at_least_one_field(self, mock_request, client):
+        """No fields provided is an error and makes no network call."""
+        with pytest.raises(ValueError, match="At least one field"):
+            client.update_server(123)
+
+        mock_request.assert_not_called()
+
     @patch("requests.Session.request")
     def test_get_outages(self, mock_request, client):
         """Test getting outages."""

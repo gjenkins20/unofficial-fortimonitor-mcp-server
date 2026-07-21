@@ -570,9 +570,16 @@ class FortiMonitorClient:
         """
         Update server properties.
 
+        The FortiMonitor API treats ``PUT /server/{server_id}`` as a full-object
+        update whose required fields are ``name``, ``fqdn`` and ``server_group``.
+        To support partial updates (e.g. a rename), this method reads the current
+        server first and always resends those required fields, changing only what
+        the caller supplied. Optional fields that are not sent are preserved by the
+        API.
+
         Args:
             server_id: ID of the server
-            name: New server name
+            name: New server name (current name is kept if not provided)
             description: New description
             tags: New list of tags (replaces existing)
             status: New status ('active', 'inactive', 'paused')
@@ -583,27 +590,41 @@ class FortiMonitorClient:
         Raises:
             NotFoundError: If server not found
             APIError: If update fails
+            ValueError: If no field is provided, status is invalid, or the server
+                is missing the fqdn/server_group needed to build a valid payload
         """
-        endpoint = f"server/{server_id}"
+        if not any([name, description, tags is not None, status]):
+            raise ValueError("At least one field must be provided for update")
 
-        data = {}
-        if name is not None:
-            data["name"] = name
+        # Validate status before any network call so bad input fails fast.
+        if status is not None:
+            valid_statuses = ["active", "inactive", "paused"]
+            if status not in valid_statuses:
+                raise ValueError(f"Status must be one of: {valid_statuses}")
+
+        # The API requires name, fqdn and server_group on every PUT, so we read the
+        # current server and resend them even for a name-only change.
+        current = self.get_server_details(server_id)
+        if not current.fqdn or not current.server_group:
+            raise ValueError(
+                f"Server {server_id} is missing fqdn/server_group; cannot build a "
+                "valid update payload (both are required by the API)."
+            )
+
+        data: Dict[str, Any] = {
+            "name": name if name is not None else current.name,
+            "fqdn": current.fqdn,
+            "server_group": current.server_group,
+        }
         if description is not None:
             data["description"] = description
         if tags is not None:
             data["tags"] = tags
         if status is not None:
-            valid_statuses = ["active", "inactive", "paused"]
-            if status not in valid_statuses:
-                raise ValueError(f"Status must be one of: {valid_statuses}")
             data["status"] = status
 
-        if not data:
-            raise ValueError("At least one field must be provided for update")
-
         logger.info(f"Updating server {server_id} with {list(data.keys())}")
-        response = self._request("PUT", endpoint, json_data=data)
+        response = self._request("PUT", f"server/{server_id}", json_data=data)
         return response
 
     # ============================================================================
